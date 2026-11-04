@@ -124,7 +124,7 @@ export const BestiaryJournal: React.FC<BestiaryJournalProps> = ({
           </div>
           <div>
             <h2 className="text-xl font-bold font-['Space_Grotesk'] text-slate-100 flex items-center gap-2">
-              <span>DISCOVERY FIELD GUIDE</span>
+              <span>COLLECTION</span>
               <span className="text-xs px-2 py-0.5 rounded bg-amber-950 text-amber-300 font-mono border border-amber-800">
                 {creatures.length} SPECIES DISCOVERED
               </span>
@@ -478,7 +478,7 @@ export const BestiaryJournal: React.FC<BestiaryJournalProps> = ({
                         memories: [
                           {
                             timestamp: Date.now(),
-                            text: `Relocated from Field Guide to sanctuary.`,
+                            text: `Relocated from Collection to sanctuary.`,
                             type: 'nap' as const
                           },
                           ...activeInspect.memories

@@ -142,7 +142,7 @@ export const HUD: React.FC<HUDProps> = ({
             onOpenBestiary();
           }}
           className="flex items-center gap-1 text-xs font-mono font-bold text-slate-200 hover:text-amber-400 transition-colors cursor-pointer"
-          title="Open Field Guide"
+          title="Open Collection"
         >
           <span>📖</span>
           <span className="tabular-nums font-bold text-amber-400">{creatureCount}</span>
@@ -229,7 +229,7 @@ export const HUD: React.FC<HUDProps> = ({
           className="hidden sm:flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-700 text-slate-200 text-xs font-mono font-bold transition-all hover:scale-105 active:scale-95 shadow-md cursor-pointer"
         >
           <span>📖</span>
-          <span className="hidden lg:inline">GUIDE</span>
+          <span className="hidden lg:inline">COLLECTION</span>
         </button>
 
         {/* Integration Status Modal Trigger */}
