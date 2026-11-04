@@ -938,9 +938,10 @@ export const BiomeWorldRenderer: React.FC<BiomeWorldRendererProps> = React.memo(
       ghost.remove();
       el.style.opacity = '';
       document.body.style.cursor = '';
+      const droppedOnTrash = ev.type === 'pointerup' && overTrash(ev.clientX, ev.clientY);
       trash()?.classList.remove('trash-ready', 'trash-hot');
       const { onRemoveDecoration: remove, onMoveDecoration: moveTo } = dragLatest.current;
-      if (ev.type === 'pointerup' && overTrash(ev.clientX, ev.clientY)) {
+      if (droppedOnTrash) {
         remove(decor.id);
         return;
       }
@@ -1001,10 +1002,11 @@ export const BiomeWorldRenderer: React.FC<BiomeWorldRendererProps> = React.memo(
       window.removeEventListener('pointercancel', end);
       ghost.remove();
       document.body.style.cursor = '';
+      const droppedOnTrash = ev.type === 'pointerup' && overTrash(ev.clientX, ev.clientY);
       trash()?.classList.remove('trash-ready', 'trash-hot');
       const moveTile = dragLatest.current.onMoveTile;
       if (ev.type !== 'pointerup' || !moveTile) return;
-      if (overTrash(ev.clientX, ev.clientY)) { moveTile(from.x, from.y, null, null); return; }
+      if (droppedOnTrash) { moveTile(from.x, from.y, null, null); return; }
       const box = containerRef.current?.getBoundingClientRect();
       if (!box) return;
       const gx = Math.floor(((ev.clientX - box.left) / box.width) * GRID_WIDTH);
@@ -1683,4 +1685,5 @@ export const BiomeWorldRenderer: React.FC<BiomeWorldRendererProps> = React.memo(
     </div>
   );
 });
+
 

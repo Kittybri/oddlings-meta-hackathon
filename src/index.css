@@ -371,3 +371,36 @@
  .pixel-dock > div:last-child > button {flex-direction:column;gap:1px;font:600 12px/1.1 system-ui,sans-serif;white-space:normal}
  .pixel-dock .pixel-hint {font:13px/1.35 system-ui,sans-serif}
 }
+.builder-more,.builder-word {display:none}
+@media(max-width:639px), (max-height:450px) and (max-width:1024px) and (orientation:landscape) {
+ .oddlings-app:has(.biome-toolbar[data-editing=true]) .phone-nav {display:none}
+ .biome-toolbar[data-editing=true] >div:first-child {padding:calc(var(--hud-h) + 4px) 5px 5px!important;background:#11182b}
+ .biome-toolbar[data-editing=true] >div:first-child >div:first-child {display:none}
+ .biome-toolbar[data-editing=true] >div:first-child >div:last-child {display:flex;width:100%;flex-wrap:wrap;gap:4px;overflow:visible}
+ .biome-toolbar[data-editing=true] >div:first-child >div:last-child >* {font:600 12px/1.2 system-ui,sans-serif;padding:3px 5px}
+ .biome-toolbar[data-editing=true] .builder-more,.builder-word {display:inline}
+ .builder-more {background:#29334d;color:#eef1ff;border:1px solid #5f6d8e}
+ .biome-toolbar[data-editing=true] button[title$="Toolbox"] {order:-5;background:#153e48;color:#c6fff2;flex:1}
+ .biome-toolbar button[title^="Undo"] {order:-4}
+ .biome-toolbar button[title^="Redo"] {order:-3}
+ .biome-toolbar .builder-more {order:-2}
+ .biome-toolbar button[title^="Save biome"] {order:-1;background:#087356;color:white}
+ .biome-toolbar .desktop-done {display:none}
+ .biome-toolbar[data-more=false][data-editing=true] >div:first-child >div:last-child > :is(div:not(.decor-trash),button[title^="Controls"],button[title^="Discard"],.phone-control:not(.decor-trash)) {display:none}
+ .biome-toolbar[data-editing=true] >div:first-child .decor-trash {display:none}
+ .biome-toolbar[data-editing=true][data-more=true] >div:first-child .decor-trash,.biome-toolbar[data-editing=true]:has(.trash-ready) >div:first-child .decor-trash {display:flex}
+ .biome-toolbar[data-more=true][data-editing=true] >div:first-child >div:first-child {display:flex;width:100%;order:2}
+ .build-toolbox {max-height:32dvh;border:1px solid #527481;background:#151e32}
+ .build-toolbox > div:first-child >div:first-child {display:flex;overflow-x:auto;flex-wrap:nowrap}
+ .build-toolbox >div:nth-last-child(2) {margin-top:4px}
+}
+@media(max-width:639px), (max-height:450px) and (max-width:1024px) and (orientation:landscape) {
+ .build-toolbox {display:flex;flex-direction:column;gap:6px}
+ .build-toolbox >div:first-child {display:contents}
+ .build-toolbox >div:first-child >div:first-child {order:0;flex-shrink:0}
+ .build-toolbox >div:nth-last-child(2) {order:1;overflow:visible;flex:none}
+ .build-toolbox >div:first-child >div:nth-child(2) {order:2}
+ .build-toolbox >.decor-trash {order:3}
+ .build-toolbox >div:last-child {order:4}
+ .build-toolbox >div:nth-last-child(2) >div {flex-wrap:wrap}
+}

@@ -30,7 +30,7 @@ interface BiomeEditorToolbarProps {
   onUndo: () => void;
   onRedo: () => void;
   isDirty: boolean;
-  onSave: () => void;
+  onSave: () => boolean | undefined;
   onCancel: () => void;
   onResetBiome: () => void;
   onApplyTemplate: (templateId: StarterTemplateId) => void;
@@ -63,6 +63,8 @@ export const BiomeEditorToolbar: React.FC<BiomeEditorToolbarProps> = ({
   onOpenCreateBiome,
   onOpenManageBiome
 }) => {
+  const [more, setMore] = useState(false);
+  useEffect(() => { if (!isEditMode) setMore(false); }, [isEditMode]);
   const [activeTab, setActiveTab] = useState<EditorToolTab>('terrain');
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [pendingTemplate, setPendingTemplate] = useState<{ id: StarterTemplateId; label: string; desc: string; icon: string } | null>(null);
@@ -126,7 +128,7 @@ export const BiomeEditorToolbar: React.FC<BiomeEditorToolbarProps> = ({
   ];
 
   return (
-    <div data-editing={isEditMode} className="biome-toolbar relative z-30 select-none">
+    <div data-more={more} data-editing={isEditMode} className="biome-toolbar relative z-30 select-none">
       {/* Top Habitat Switcher Bar + Mode Toggle */}
       <div
       className="flex flex-wrap items-center justify-between gap-2.5 px-4 pb-2 bg-gradient-to-b from-slate-950/95 via-slate-950/80 to-transparent"
@@ -245,6 +247,7 @@ export const BiomeEditorToolbar: React.FC<BiomeEditorToolbarProps> = ({
               </span>
             </div>
 
+            <button className="builder-more" aria-expanded={more} onClick={() => setMore(!more)}>••• More</button>
             {/* Undo */}
             <button
               disabled={!canUndo}
@@ -296,16 +299,16 @@ export const BiomeEditorToolbar: React.FC<BiomeEditorToolbarProps> = ({
             {/* Save / Done Button */}
             <button
               onClick={() => {
+                if (!onSave()) return;
                 sound.playFanfare();
                 setShowSaveToast(true);
                 setTimeout(() => setShowSaveToast(false), 2400);
-                onSave();
               }}
               className="px-3 py-1 rounded-md bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs font-mono shadow-md cursor-pointer flex items-center gap-1"
               title="Save biome world to storage and enter play mode"
             >
               <span>💾</span>
-              <span>DONE</span>
+              <span className="desktop-done">DONE</span><span className="builder-word">Done ✓</span>
             </button>
 
             <button className="phone-control" aria-pressed={activeTool.type === 'grab'} onClick={() => pickTool({ type: 'grab' })}>Move</button>
@@ -319,7 +322,7 @@ export const BiomeEditorToolbar: React.FC<BiomeEditorToolbarProps> = ({
               className="px-2 py-1 rounded-md bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-200 text-xs font-mono border border-slate-800 cursor-pointer"
               title={isToolboxCollapsed ? 'Expand Toolbox' : 'Collapse Toolbox'}
             >
-              {isToolboxCollapsed ? '▾ ' + (activeTool.type === 'brush' ? activeTool.material : activeTool.type) : '▴ Hide'}
+              <span className="builder-word">Tools · </span>{isToolboxCollapsed ? '▾ '  + (activeTool.type === 'brush' ? activeTool.material : activeTool.type === 'grab' ? 'Move' : activeTool.type) : '▴ Hide'}
             </button>
           </div>
         )}
@@ -354,7 +357,7 @@ export const BiomeEditorToolbar: React.FC<BiomeEditorToolbarProps> = ({
                 onClick={() => {
                   sound.playClick();
                   setActiveTab('water');
-                  pickTool({ type: 'brush', material: 'water' });
+                  onSelectTool({ type: 'brush', material: 'water' });
                 }}
                 className={`px-3 py-1 rounded-lg text-xs font-mono font-bold transition-all ${
                   activeTab === 'water'
