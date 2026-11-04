@@ -33,7 +33,7 @@ export const GoalChecklistModal: React.FC<GoalChecklistModalProps> = ({
 
   const claimReward = () => {
     if (!allComplete) return;
-    const result = walletBook.claimOnce(rewardId, 0, 0, 100);
+    const result = walletBook.claimOnce(rewardId, 0, 0, 50);
     setClaimed(result !== 'failed');
     setRewardError(result === 'failed' ? 'Could not save your reward. Please try again.' : '');
   };
@@ -216,7 +216,7 @@ export const GoalChecklistModal: React.FC<GoalChecklistModalProps> = ({
             disabled={!allComplete || claimed}
             className="w-full min-h-11 py-2 rounded-xl bg-amber-500 text-slate-950 font-bold disabled:bg-slate-800 disabled:text-slate-400"
           >
-            {claimed ? '✓ 100 Sparkles claimed' : allComplete ? '✨ Claim 100 Sparkles' : '✨ Complete all 4 goals to earn 100 Sparkles'}
+            {claimed ? '✓ 50 Sparkles claimed' : allComplete ? '✨ Claim 50 Sparkles' : '✨ Complete all 4 goals to earn 50 Sparkles'}
           </button>
           {rewardError && <p role="alert" className="mt-2 text-rose-300">{rewardError}</p>}
         </div>
