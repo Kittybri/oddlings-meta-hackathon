@@ -66,7 +66,7 @@ export const BiomeEditorToolbar: React.FC<BiomeEditorToolbarProps> = ({
   const [activeTab, setActiveTab] = useState<EditorToolTab>('terrain');
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [pendingTemplate, setPendingTemplate] = useState<{ id: StarterTemplateId; label: string; desc: string; icon: string } | null>(null);
-  const [isToolboxCollapsed, setIsToolboxCollapsed] = useState(false);
+  const [isToolboxCollapsed, setIsToolboxCollapsed] = useState(() => typeof window !== 'undefined' && window.innerWidth < 640);
   const [showHelpModal, setShowHelpModal] = useState(false);
   const [showSaveToast, setShowSaveToast] = useState(false);
 
@@ -122,7 +122,7 @@ export const BiomeEditorToolbar: React.FC<BiomeEditorToolbarProps> = ({
   ];
 
   return (
-    <div className="relative z-30 select-none">
+    <div className="biome-toolbar relative z-30 select-none">
       {/* Top Habitat Switcher Bar + Mode Toggle */}
       <div
       className="flex flex-wrap items-center justify-between gap-2.5 px-4 pb-2 bg-gradient-to-b from-slate-950/95 via-slate-950/80 to-transparent"
@@ -188,10 +188,11 @@ export const BiomeEditorToolbar: React.FC<BiomeEditorToolbarProps> = ({
                 onOpenCreateBiome();
               }}
               className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-mono font-bold bg-cyan-950/80 hover:bg-cyan-900 text-cyan-300 border border-cyan-600/60 shadow-sm transition-all cursor-pointer"
+              aria-label="Create a new custom photo biome"
               title="Create a new custom photo biome"
             >
               <span>+</span>
-              <span>Create Biome</span>
+              <span className="hidden sm:inline">Create Biome</span>
             </button>
           )}
 
@@ -211,7 +212,7 @@ export const BiomeEditorToolbar: React.FC<BiomeEditorToolbarProps> = ({
             title="Toggle between Play simulation and 2D Sandbox Biome Editor"
           >
             <span>{isEditMode ? '🌱' : '🔨'}</span>
-            <span>{isEditMode ? 'PLAY MODE' : 'BUILD / EDIT BIOME'}</span>
+            <span className="hidden sm:inline">{isEditMode ? 'PLAY MODE' : 'BUILD / EDIT BIOME'}</span><span className="sm:hidden">{isEditMode ? 'PLAY' : 'BUILD'}</span>
           </button>
         </div>
 
@@ -318,7 +319,7 @@ export const BiomeEditorToolbar: React.FC<BiomeEditorToolbarProps> = ({
 
       {/* Expanded Sandbox Toolbox (Visible during Edit Mode) */}
       {isEditMode && !isToolboxCollapsed && (
-        <div className="mx-4 mb-2 p-3 rounded-2xl bg-slate-950/95 border border-amber-500/40 shadow-2xl backdrop-blur-md space-y-2.5">
+        <div className="build-toolbox mx-4 mb-2 p-3 rounded-2xl bg-slate-950/95 border border-amber-500/40 shadow-2xl backdrop-blur-md space-y-2.5">
           {/* Top row: Tool Tabs & Brush Sizing */}
           <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800/80 pb-2">
             {/* Category Tabs */}

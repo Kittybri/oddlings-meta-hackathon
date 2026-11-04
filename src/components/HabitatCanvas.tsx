@@ -424,12 +424,14 @@ export const HabitatCanvas: React.FC<HabitatCanvasProps> = ({
     const scroller = first?.closest<HTMLElement>('.overflow-x-auto');
     if (!scroller) return;
     const follow = () => {
-      const dx = scroller.scrollLeft - scroller.clientWidth;
+      const regionWidth = (scroller.firstElementChild as HTMLElement)?.clientWidth / 3 || scroller.clientWidth;
+      const home = regionWidth + (regionWidth - scroller.clientWidth) / 2;
+      const dx = scroller.scrollLeft - regionWidth - (regionWidth - scroller.clientWidth);
       // Away from home, or while the World is moving, they disappear fully instead of sliding half off screen
       const away = activeHabitatTheme === 'greenhouse' && worldRegion !== 0;
       document.querySelectorAll<HTMLElement>('[data-follow-view]').forEach((el) => {
         el.style.transform = dx ? 'translateX(' + dx + 'px)' : '';
-        el.style.visibility = away || Math.abs(dx) > 2 ? 'hidden' : '';
+        el.style.visibility = away || Math.abs(scroller.scrollLeft - home) > 2 ? 'hidden' : '';
       });
     };
     follow();
@@ -1448,7 +1450,7 @@ export const HabitatCanvas: React.FC<HabitatCanvasProps> = ({
   }, []);
 
   return (
-    <div className="relative w-full h-full flex flex-col justify-between overflow-hidden select-none">
+    <div className="habitat-layout relative w-full h-full flex flex-col justify-between overflow-hidden select-none">
       {/* Biome Switcher & Editor Toolbar Header */}
       <BiomeEditorToolbar
         isEditMode={isEditMode}

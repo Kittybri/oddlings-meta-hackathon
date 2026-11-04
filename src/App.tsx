@@ -273,7 +273,7 @@ export default function App() {
   };
 
   return (
-    <main className="relative w-screen h-screen bg-slate-950 text-slate-100 overflow-hidden font-sans select-none">
+    <main className="oddlings-app relative w-screen h-screen bg-slate-950 text-slate-100 overflow-hidden font-sans select-none">
       {/* Friendship heart celebrations */}
       {heartToasts.length > 0 && (
         <div aria-live="polite" className="fixed top-16 left-1/2 -translate-x-1/2 z-[80] flex flex-col items-center gap-2 pointer-events-none">

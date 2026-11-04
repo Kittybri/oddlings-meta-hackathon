@@ -170,7 +170,8 @@ export const HUD: React.FC<HUDProps> = ({
         {/* Active Egg Countdown Widget */}
         {activeEgg && (
           <button
-            onClick={() => {
+            aria-label="Open incubator"
+          onClick={() => {
               sound.playClick();
               handleOpenIncubator();
             }}
@@ -187,6 +188,7 @@ export const HUD: React.FC<HUDProps> = ({
         )}
 
         <button
+          aria-label="Open incubator"
           onClick={() => {
             sound.playClick();
             handleOpenIncubator();
@@ -198,6 +200,7 @@ export const HUD: React.FC<HUDProps> = ({
         </button>
 
         <button
+          aria-label="Open Fusion Lab"
           onClick={() => {
             sound.playClick();
             onOpenFusion();
