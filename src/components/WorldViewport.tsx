@@ -145,13 +145,13 @@ export function WorldViewport({ enabled, editMode, region, neighbors, world, onT
     <WorldSky atmosphere={atmosphere} weather={weather} />
     {!editMode && <WindVisuals strength={weather.wind ?? 0} windy={weather.state === 'windy'} />}
     {!barOpen ? (
-      <button onClick={() => setBarOpen(true)} title="Show explore and weather controls" aria-label="Show explore and weather controls" className="absolute top-2 left-2 z-40 px-2 py-1 rounded-lg bg-slate-950/80 border border-emerald-500/50 text-xs text-emerald-100 shadow-lg">🧭</button>
+      <button onClick={() => setBarOpen(true)} title="Show explore and weather controls" aria-label="Show explore and weather controls" className="absolute top-2 left-2 z-40 px-2 py-1 rounded-lg bg-slate-950/80 border border-emerald-500/50 text-xs text-emerald-100 shadow-lg">🧭{!editMode && <span className="habitat-phone-only"> Explore</span>}</button>
     ) : (
     <div className="absolute top-2 left-2 z-40 flex flex-wrap items-center gap-1 rounded-xl bg-slate-950/90 border border-emerald-500/50 p-1 text-xs text-emerald-100 shadow-lg">
       <button aria-label="Explore World left" onClick={() => scroll(-1)} className="px-3 py-2 rounded-lg hover:bg-emerald-900">←</button>
       <button aria-pressed={pan} onClick={() => (editMode ? setEditPan(!editPan) : setPan(!panChoice))} title={editMode ? 'While this is on, dragging scrolls the World instead of building' : undefined} className={'px-2 py-2 rounded-lg hover:bg-emerald-900 ' + (editMode && pan ? 'bg-emerald-800' : '')}>{pan ? '✋ Drag to explore' : '✋ Explore'}</button>
       <button aria-label="Explore World right" onClick={() => scroll(1)} className="px-3 py-2 rounded-lg hover:bg-emerald-900">→</button>
-      <button onClick={() => { if (region === 0) scroller.current?.scrollTo({ left: homeScroll(scroller.current) }); else { offset.current = null; onTravel(-region); } }} title="Jump back to Home" aria-label="Jump back to Home" className="px-2 py-2 rounded-lg hover:bg-emerald-900">⌂</button>
+      <button onClick={() => { if (region === 0) scroller.current?.scrollTo({ left: homeScroll(scroller.current) }); else { offset.current = null; onTravel(-region); } }} title="Jump back to Home" aria-label="Jump back to Home" className="px-2 py-2 rounded-lg hover:bg-emerald-900">⌂{!editMode && <span className="habitat-phone-only"> Recenter</span>}</button>
       <span title="20-minute day, sunset, night and dawn cycle" className="px-2 text-[10px] text-sky-200">{atmosphere.label}</span>
       <button onClick={cycleWeather} title="Cycle weather: storm → wind → clear → automatic (W)" aria-label="Change the weather" className="px-2 py-1 rounded-lg hover:bg-emerald-900 text-[10px] text-sky-200">{weatherLabel(weather) || '☀ Weather'}</button>
       {(editMode || !roomy()) && <button onClick={() => setBarOpen(false)} title="Hide these controls" aria-label="Hide explore and weather controls" className="px-2 py-1 rounded-lg hover:bg-emerald-900">✕</button>}

@@ -134,6 +134,16 @@ export const BiomeEditorToolbar: React.FC<BiomeEditorToolbarProps> = ({
     >
         {/* Left: Biome Themes + Build/Edit Toggle Button */}
         <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+          {!isEditMode && <select className="world-picker" aria-label="Choose or create a world" value={activeHabitatTheme}
+            onChange={e => {
+              const value = e.target.value;
+              if (value === 'create') onOpenCreateBiome?.();
+              else onChangeTheme(value);
+            }}>
+            <option value="greenhouse">🌍 World</option>
+            {customBiomes.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+            {onOpenCreateBiome && <option value="create">＋ Create biome</option>}
+          </select>}
           <span className="text-[10px] font-mono text-slate-400 font-bold uppercase tracking-wider mr-1">
             BIOME:
           </span>

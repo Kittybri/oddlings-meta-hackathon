@@ -170,7 +170,7 @@ export const HUD: React.FC<HUDProps> = ({
         >
           <span>🎯</span>
           <span className="font-bold">{completedGoalsCount}/4</span>
-          <span className="hidden sm:inline text-slate-200">Goals</span>
+          <span className="hidden sm:inline text-slate-200 habitat-goals">Goals</span>
         </button>
       </div>
 

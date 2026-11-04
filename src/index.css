@@ -361,3 +361,13 @@
 .world-viewport[data-editing="true"] .world-strip *,
 .world-viewport[data-editing="true"] .world-strip *::before,
 .world-viewport[data-editing="true"] .world-strip *::after { animation-play-state:paused }
+.world-picker,.habitat-phone-only {display:none}
+@media(max-width:639px), (max-height:450px) and (max-width:1024px) and (orientation:landscape) {
+ .world-picker {display:inline-flex;width:108px;padding:6px;background:#163e42;color:#c4ffda;border:2px solid #51958a;font:600 14px system-ui,sans-serif}
+ .biome-toolbar:has(.world-picker) :is(button[aria-label^="World"],button[aria-label^="Create a new"],div:has(>button[title^="Manage"]) >button:first-child) {display:none}
+ .habitat-phone-only,.oddlings-app:has(.pixel-dock) .habitat-goals {display:inline}
+ .pixel-dock .original-quest {display:none}
+ .pixel-dock .phone-resident {gap:5px;margin-right:auto}
+ .pixel-dock > div:last-child > button {flex-direction:column;gap:1px;font:600 12px/1.1 system-ui,sans-serif;white-space:normal}
+ .pixel-dock .pixel-hint {font:13px/1.35 system-ui,sans-serif}
+}
