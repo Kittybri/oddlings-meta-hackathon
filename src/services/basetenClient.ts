@@ -48,7 +48,7 @@ export async function parseSafeJson<T>(res: Response, endpointDesc: string): Pro
   }
 
   if (!res.ok) {
-    throw Object.assign(new Error(data?.error || `${endpointDesc} failed (HTTP ${res.status})`), { transient: data?.retryable === true });
+    throw Object.assign(new Error(data?.error || `${endpointDesc} failed (HTTP ${res.status})`), { transient: res.status !== 429 && data?.retryable === true });
   }
 
   return data as T;
@@ -132,10 +132,10 @@ export async function requestBasetenAnalysis(params: {
   objectHint?: string;
   region?: { x: number; y: number; width: number; height: number };
 }, onRefining?: () => void): Promise<AnalyzeResult> {
-  // Muse Spark usually answers in 15-30 s; a request that hangs is given up after 100 s so the player can retry
+  // Muse Spark usually answers in 15-30 s; a request that hangs is given up after 140 s so the player can retry
   // A brief server hiccup is retried once by itself before the player sees an error
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 100_000);
+  const timer = setTimeout(() => controller.abort(), 140_000);
   try {
     for (let attempt = 0; ; attempt++) {
       try {
@@ -145,7 +145,11 @@ export async function requestBasetenAnalysis(params: {
           body: JSON.stringify({ ...params, refining: attempt === 1 }),
           signal: controller.signal
         });
-        return await parseSafeJson<AnalyzeResult>(res, 'Meta Muse Spark analysis');
+        const result = await parseSafeJson<AnalyzeResult>(res, 'Meta Muse Spark analysis');
+        if (!result?.success || !result.dna?.name || !result.dna?.recognizedObject || !result.dna?.specialAbility?.name || !result.dna?.appearance) {
+          throw Object.assign(new Error('Creature details were incomplete.'), { transient: true });
+        }
+        return result;
       } catch (err: any) {
         if (attempt > 0 || !err?.transient) throw err;
         onRefining?.();

@@ -75,3 +75,16 @@ test('timeout ends the request without another attempt', async () => {
     assert.equal(calls, 1);
   } finally { globalThis.fetch = original; }
 });
+
+test('an incomplete success resends the same photo once', async () => {
+  const original = globalThis.fetch;
+  const images: string[] = [];
+  globalThis.fetch = async (_, options) => {
+    images.push(JSON.parse(String(options?.body)).imageBase64);
+    return Response.json({ success: true, dna: images.length === 1 ? {} : dna });
+  };
+  try {
+    assert.deepEqual((await requestBasetenAnalysis({ imageBase64: 'plant' })).dna, dna);
+    assert.deepEqual(images, ['plant', 'plant']);
+  } finally { globalThis.fetch = original; }
+});

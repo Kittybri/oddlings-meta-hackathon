@@ -450,7 +450,7 @@ Never output raw SVG, HTML, or executable code. Respond with ONLY a raw JSON obj
   };
 
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 45000);
+  const timeoutId = setTimeout(() => controller.abort(), 60_000);
 
   try {
     const res = await fetch(BASETEN_CHAT_ENDPOINT, {
@@ -495,7 +495,7 @@ Never output raw SVG, HTML, or executable code. Respond with ONLY a raw JSON obj
     return validated;
   } catch (err: any) {
     if (err.name === 'AbortError') {
-      throw { status: 504, message: 'Request to Meta Muse Spark on Baseten timed out after 35 seconds.' };
+      throw { status: 504, retryable: true, message: 'Photo analysis timed out after 60 seconds.' };
     }
     if (err.status) throw err;
     throw { status: 500, message: err.message || 'Failed to communicate with Baseten inference API.' };
