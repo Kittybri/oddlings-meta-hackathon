@@ -101,7 +101,7 @@ type ArtChoice = 'meta' | 'photo';
 export const PhotoItemModal: React.FC<PhotoItemModalProps> = ({ onClose, onSaved }) => {
   const [photo, setPhoto] = useState<PhotoState | null>(null);
   const [hint, setHint] = useState('');
-  const [busy, setBusy] = useState<'' | 'making' | 'redrawing'>('');
+  const [busy, setBusy] = useState<'' | 'making' | 'redrawing' | 'refining'>('');
   const [error, setError] = useState('');
   const [draft, setDraft] = useState<ItemDraft | null>(null);
   const [museArt, setMuseArt] = useState<string | null>(null);
@@ -178,7 +178,7 @@ export const PhotoItemModal: React.FC<PhotoItemModalProps> = ({ onClose, onSaved
     })
       .then((res) => parseSafeJson<any>(res, 'Meta Muse Spark item'))
       .catch(() => null);
-    const artJob = drawItemArt(photo.jpeg, hint.trim() || 'object', colors).catch(() => null);
+    const artJob = drawItemArt(photo.jpeg, hint.trim() || 'object', colors, () => setBusy('refining')).catch(() => null);
     const [data, art] = await Promise.all([sparkJob, artJob]);
     const d = sanitizeDraft(data?.item) || { name: hint.trim().slice(0, 32) || 'My Photo Item', description: 'Made from my own photo.', category: 'decor' as ItemCategory, glow: false };
     setDraft(d);
@@ -194,7 +194,7 @@ export const PhotoItemModal: React.FC<PhotoItemModalProps> = ({ onClose, onSaved
     setBusy('redrawing');
     setError('');
     const colors = await photoColors(photo.jpeg).catch(() => [] as string[]);
-    const art = await drawItemArt(photo.jpeg, draft?.name || hint.trim() || 'object', colors).catch(() => null);
+    const art = await drawItemArt(photo.jpeg, draft?.name || hint.trim() || 'object', colors, () => setBusy('refining')).catch(() => null);
     if (art) {
       setMuseArt(art);
       setChoice('meta');
@@ -332,7 +332,7 @@ export const PhotoItemModal: React.FC<PhotoItemModalProps> = ({ onClose, onSaved
                   style={{ ...btn, background: isAtCapacity ? '#e2e8f0' : '#ff6b9d' }}
                 >
                   {busy
-                    ? '✨ META IS DRAWING… (ABOUT 20 S)'
+                    ? (busy === 'refining' ? '✨ REFINING YOUR ITEM…' : '✨ META IS DRAWING…')
                     : isAtCapacity
                     ? '⚠️ ITEM LIBRARY FULL (12/12)'
                     : '★ MAKE IT WITH META · ' + GEM_ICON + ' 1'}
@@ -355,7 +355,7 @@ export const PhotoItemModal: React.FC<PhotoItemModalProps> = ({ onClose, onSaved
 
                   <div className="flex gap-2 flex-wrap">
                     <button onClick={redraw} disabled={!!busy} className="px-2 py-1.5 text-[7px] disabled:opacity-60" style={{ ...btn, background: '#ffd1e8' }}>
-                      {busy === 'redrawing' ? '✨ REDRAWING…' : '✨ TRY AGAIN'}
+                      {busy === 'refining' ? '✨ REFINING YOUR ITEM…' : busy === 'redrawing' ? '✨ REDRAWING…' : '✨ TRY AGAIN'}
                     </button>
                     <button onClick={() => setChoice(choice === 'meta' ? 'photo' : 'meta')} disabled={!!busy || (!museArt && !museGrid)} className="px-2 py-1.5 text-[7px] disabled:opacity-50" style={{ ...btn, background: '#fff3d6' }}>
                       {choice === 'meta' ? '📷 USE THE PHOTO INSTEAD' : '★ USE META\'S DRAWING'}

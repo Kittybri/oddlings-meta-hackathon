@@ -1,3 +1,4 @@
+import { hasUsableItemSilhouette, retryItemArt } from './itemArtQuality';
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -935,7 +936,16 @@ export async function drawFusionArt(params: { imageA: string; imageB: string; na
  * Photo items: Muse Image redraws the photo as a placeable pixel item. The background is cut away and the result
  * is placed bottom-centered on a 128 px square so it stores compactly and sits on the ground like other props.
  */
-export async function drawItemArt(photo: string, objectName: string, colors: string[] = []): Promise<string | null> {
+export async function drawItemArt(
+  photo: string,
+  objectName: string,
+  colors: string[] = [],
+  onRefining?: () => void
+): Promise<string | null> {
+  return retryItemArt(() => drawItemArtAttempt(photo, objectName, colors), onRefining);
+}
+
+async function drawItemArtAttempt(photo: string, objectName: string, colors: string[]): Promise<string | null> {
   const result = await runServerJob('/api/meta/creature-art', { imageBase64: photo, objectName, colors, kind: 'item' });
   const image = typeof result?.image === 'string' && result.image.startsWith('data:image/') ? result.image : null;
   const shrunk = image ? await shrinkArt(image) : null;
@@ -958,6 +968,8 @@ export async function drawItemArt(photo: string, objectName: string, colors: str
   if (!ctx) return null;
   ctx.imageSmoothingEnabled = false;
   ctx.drawImage(img, Math.floor((SIDE - w) / 2), SIDE - h, w, h);
+  const pixels = ctx.getImageData(0, 0, SIDE, SIDE).data;
+  if (!hasUsableItemSilhouette(pixels, SIDE, SIDE)) return null;
   return canvas.toDataURL('image/png');
 }
 
