@@ -1,3 +1,4 @@
+import { parseCreatureResponse } from './creatureResponse';
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -322,6 +323,7 @@ export async function analyzeObjectWithBaseten(params: {
   imageBase64: string;
   objectHint?: string;
   region?: { x: number; y: number; width: number; height: number };
+  refining?: boolean;
 }): Promise<ExtractedDnaResponse> {
   const apiKey = process.env.BASETEN_API_KEY;
   if (!apiKey || !apiKey.trim()) {
@@ -437,7 +439,7 @@ Never output raw SVG, HTML, or executable code. Respond with ONLY a raw JSON obj
       {
         role: 'user',
         content: [
-          { type: 'text', text: promptText },
+          { type: 'text', text: promptText + (params.refining ? '\nReturn concise complete JSON. Short descriptions, at most 6 body blocks and 3 accents. No commentary.' : '') },
           { type: 'image_url', image_url: { url: imageUrl } }
         ]
       }
@@ -482,32 +484,7 @@ Never output raw SVG, HTML, or executable code. Respond with ONLY a raw JSON obj
 
     const json = await res.json();
     const choice = json.choices?.[0];
-    const message = choice?.message || {};
-    let rawContent = message.content || choice?.text || (typeof choice === 'string' ? choice : '');
-    
-    // Support reasoning models where JSON was finalized or embedded in reasoning_content
-    if ((!rawContent || typeof rawContent !== 'string' || !rawContent.trim()) && typeof message.reasoning_content === 'string') {
-      const match = message.reasoning_content.match(/```json\s*([\s\S]*?)\s*```/) || message.reasoning_content.match(/\{[\s\S]*\}/);
-      if (match) {
-        rawContent = match[1] || match[0];
-      }
-    }
-
-    const content = typeof rawContent === 'string' ? rawContent.trim() : (Array.isArray(rawContent) ? rawContent.map((c: any) => c.text || '').join('') : '');
-
-    if (!content) {
-      console.warn('[Baseten] Response json keys:', Object.keys(json), 'Choice:', JSON.stringify(choice));
-      throw { status: 502, message: `No content returned by Meta Muse Spark Open. Response: ${JSON.stringify(choice || json).slice(0, 200)}` };
-    }
-
-    // Parse returned JSON content (handling optional markdown wrapper)
-    const cleanedContent = content.trim().replace(/^```json\s*/i, '').replace(/\s*```$/i, '');
-    let parsed: unknown;
-    try {
-      parsed = JSON.parse(cleanedContent);
-    } catch {
-      throw { status: 502, message: 'Muse Spark returned invalid JSON structure.' };
-    }
+    const parsed = parseCreatureResponse(choice);
 
     const validated = validateAndSanitizeMuseOutput(parsed, params.objectHint || 'Photographed Object');
 

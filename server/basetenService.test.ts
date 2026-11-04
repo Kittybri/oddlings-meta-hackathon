@@ -223,6 +223,7 @@ test('analyzeObjectWithBaseten processes mocked upstream success correctly', asy
             message: {
               content: JSON.stringify({
                 name: 'Chrono-Optic',
+                recognizedObject: 'Pocket lens',
                 speciesName: 'Horolo Vitrum',
                 title: 'The Brass Chronometer',
                 primaryElement: 'Chrono',

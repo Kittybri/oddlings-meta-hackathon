@@ -38,6 +38,7 @@ export interface Wallet {
   careToday: number;
   /** One-time rewards already paid out (for example the first garden adventure), so none is ever paid twice */
   receipts: string[];
+  incubation?: { id: string; at: number };
   fusion?: { id: string; cost: number; result?: CreatureDNA };
 }
 
@@ -60,6 +61,7 @@ const day = (v: unknown) => (typeof v === 'string' ? v.slice(0, 10) : '');
 export function cleanWallet(raw: any): Wallet {
   if (!raw || typeof raw !== 'object') return { ...NEW_WALLET };
   return {
+    incubation: raw.incubation && typeof raw.incubation.id === 'string' && Number.isFinite(raw.incubation.at) ? raw.incubation : undefined,
     fusion: raw.fusion && typeof raw.fusion.id === 'string' && Number.isFinite(raw.fusion.cost) && raw.fusion.cost > 0 ? raw.fusion : undefined,
     seeds: count(raw.seeds, START_SEEDS),
     gems: count(raw.gems, START_GEMS),
@@ -307,6 +309,19 @@ export class WalletBook {
   claimFusion(id: string): boolean {
     const w = this.get();
     return w.fusion?.id !== id || this.save({ ...w, fusion: undefined });
+  }
+
+  beginIncubation(): { id: string; at: number } | null {
+    const w = this.get();
+    if (w.incubation || w.seeds < 1) return null;
+    const incubation = { id: crypto.randomUUID(), at: Date.now() };
+    return this.save({ ...w, seeds: w.seeds - 1, incubation }) ? incubation : null;
+  }
+
+  settleIncubation(id: string, refund: boolean): boolean {
+    const w = this.get();
+    if (w.incubation?.id !== id) return true;
+    return this.save({ ...w, seeds: w.seeds + (refund ? 1 : 0), incubation: undefined });
   }
 
   spendSeed(): boolean {

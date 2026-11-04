@@ -48,7 +48,7 @@ export async function parseSafeJson<T>(res: Response, endpointDesc: string): Pro
   }
 
   if (!res.ok) {
-    throw new Error(data?.error || `${endpointDesc} failed (HTTP ${res.status})`);
+    throw Object.assign(new Error(data?.error || `${endpointDesc} failed (HTTP ${res.status})`), { transient: data?.retryable === true });
   }
 
   return data as T;
@@ -131,23 +131,24 @@ export async function requestBasetenAnalysis(params: {
   imageBase64: string;
   objectHint?: string;
   region?: { x: number; y: number; width: number; height: number };
-}): Promise<AnalyzeResult> {
-  // Muse Spark usually answers in 15-30 s; a request that hangs is given up after 90 s so the player can retry
+}, onRefining?: () => void): Promise<AnalyzeResult> {
+  // Muse Spark usually answers in 15-30 s; a request that hangs is given up after 100 s so the player can retry
   // A brief server hiccup is retried once by itself before the player sees an error
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 90_000);
+  const timer = setTimeout(() => controller.abort(), 100_000);
   try {
     for (let attempt = 0; ; attempt++) {
       try {
         const res = await fetch('/api/baseten/analyze', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(params),
+          body: JSON.stringify({ ...params, refining: attempt === 1 }),
           signal: controller.signal
         });
         return await parseSafeJson<AnalyzeResult>(res, 'Meta Muse Spark analysis');
       } catch (err: any) {
         if (attempt > 0 || !err?.transient) throw err;
+        onRefining?.();
         await new Promise((r) => setTimeout(r, 2000));
       }
     }

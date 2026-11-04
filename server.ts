@@ -102,7 +102,7 @@ app.get('/api/baseten/status', (_req: Request, res: Response) => {
 // Analyze object with Meta Muse Spark Open via Baseten
 app.post('/api/baseten/analyze', async (req: Request, res: Response) => {
   try {
-    const { imageBase64, objectHint, region } = req.body || {};
+    const { imageBase64, objectHint, region, refining } = req.body || {};
     if (!imageBase64 || typeof imageBase64 !== 'string') {
       res.status(400).json({ error: 'Missing required imageBase64 payload.' });
       return;
@@ -111,7 +111,8 @@ app.post('/api/baseten/analyze', async (req: Request, res: Response) => {
     const dna = await analyzeObjectWithBaseten({
       imageBase64,
       objectHint: typeof objectHint === 'string' ? objectHint : undefined,
-      region
+      region,
+      refining: refining === true
     });
 
     res.json({
@@ -127,7 +128,8 @@ app.post('/api/baseten/analyze', async (req: Request, res: Response) => {
   } catch (err: any) {
     const status = err.status || 500;
     res.status(status).json({
-      error: err.message || 'Failed to analyze object with Meta Muse Spark.'
+      error: 'Your creature could not take shape. Please try again.',
+      retryable: err.retryable === true
     });
   }
 });

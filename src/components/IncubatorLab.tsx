@@ -60,7 +60,7 @@ const PENDING_EGG_KEY = 'oddlings_pending_egg_v1';
 const PENDING_PHOTO_KEY = 'oddlings_pending_egg_photo_v1';
 
 function markPendingEgg(photo: string): void {
-  try { localStorage.setItem(PENDING_EGG_KEY, JSON.stringify({ at: Date.now() })); } catch { /* storage unavailable */ }
+  try { localStorage.setItem(PENDING_EGG_KEY, JSON.stringify({ at: Date.now(), version: 2 })); } catch { /* storage unavailable */ }
   try { sessionStorage.setItem(PENDING_PHOTO_KEY, photo); } catch { /* photo too big to keep: the seed still comes back */ }
 }
 
@@ -80,6 +80,7 @@ export const IncubatorLab: React.FC<IncubatorLabProps> = ({
   const [photoPreviewUrl, setPhotoPreviewUrl] = useState<string | null>(null);
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
+  const [isRefining, setIsRefining] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
 
@@ -164,11 +165,14 @@ export const IncubatorLab: React.FC<IncubatorLabProps> = ({
   // A photo being turned into an egg is remembered until the egg exists, so a refresh or a closed tab mid-analysis
   // gives the Life Seed back and brings the photo back for another try (instead of losing both)
   useEffect(() => {
-    let pending: { at: number } | null = null;
+    let pending: { at: number; version?: number } | null = null;
     try { pending = JSON.parse(localStorage.getItem(PENDING_EGG_KEY) || 'null'); } catch { pending = null; }
+    const reservation = walletBook.get().incubation;
+    if (pending?.version === 2 && !reservation) { clearPendingEgg(); return; }
+    if (reservation) pending = reservation;
     if (!pending) return;
-    if (activeEgg && activeEgg.createdAt >= pending.at) { clearPendingEgg(); return; } // the egg was made just before the interruption
-    if (!walletBook.refundSeed()) { setAnalysisError("Free device space and reopen the incubator to recover your seed."); return; }
+    if (activeEgg && activeEgg.createdAt >= pending.at) { if (!reservation || walletBook.settleIncubation(reservation.id, false)) clearPendingEgg(); return; } // the egg was made just before the interruption
+    if (!(reservation ? walletBook.settleIncubation(reservation.id, true) : walletBook.refundSeed())) { setAnalysisError("Free device space and reopen the incubator to recover your seed."); return; }
     let photo: string | null = null;
     try { photo = sessionStorage.getItem(PENDING_PHOTO_KEY); sessionStorage.removeItem(PENDING_PHOTO_KEY); } catch { photo = null; }
     clearPendingEgg();
@@ -346,7 +350,9 @@ export const IncubatorLab: React.FC<IncubatorLabProps> = ({
     if (!photoPreviewUrl || isSubmittingRef.current || isAnalyzing) return;
     setAnalysisError(null);
     // Reserve Life Seed upfront; refunded immediately if analysis fails
-    if (!walletBook.spendSeed()) {
+    setIsRefining(false);
+    const reservation = walletBook.beginIncubation();
+    if (!reservation) {
       setAnalysisError('No ' + SEED_NAME + 's left! Finish a photo quest with one of your creatures to earn more ' + SEED_ICON);
       return;
     }
@@ -362,7 +368,7 @@ export const IncubatorLab: React.FC<IncubatorLabProps> = ({
 
       const result = await requestBasetenAnalysis({
         imageBase64: uploadPhoto
-      });
+      }, () => setIsRefining(true));
 
       // Ignore late results if cancelled, unmounted, or superseded by a newer job
       if (!isMountedRef.current || jobId !== analysisJobSeq.current) {
@@ -372,8 +378,7 @@ export const IncubatorLab: React.FC<IncubatorLabProps> = ({
       // Check if active egg slot was occupied while awaiting response; never overwrite active egg
       if (loadActiveEggFromStorage()) {
         console.warn('Active egg slot occupied; ignoring late response to preserve active egg.');
-        clearPendingEgg();
-        walletBook.refundSeed();
+        if (walletBook.settleIncubation(reservation.id, true)) clearPendingEgg();
         setIsAnalyzing(false);
         isSubmittingRef.current = false;
         return;
@@ -454,8 +459,9 @@ export const IncubatorLab: React.FC<IncubatorLabProps> = ({
         isClaimed: false
       };
 
+      if (walletBook.get().incubation?.id !== reservation.id) throw new Error("This incubation was already recovered.");
       if (!onEggCreated(newEgg)) throw new Error("Could not save the egg. Free device space and try again.");
-      clearPendingEgg();
+      if (walletBook.settleIncubation(reservation.id, false)) clearPendingEgg();
       setPhotoPreviewUrl(null);
       setIsAnalyzing(false);
       isSubmittingRef.current = false;
@@ -463,11 +469,12 @@ export const IncubatorLab: React.FC<IncubatorLabProps> = ({
     } catch (err: any) {
       if (jobId !== analysisJobSeq.current) return;
       // Refund reserved Life Seed on failure and retain photo preview for user retry
-      if (walletBook.refundSeed()) clearPendingEgg();
+      const refunded = walletBook.settleIncubation(reservation.id, true);
+      if (refunded) clearPendingEgg();
       setIsAnalyzing(false);
       isSubmittingRef.current = false;
       sound.playBounce();
-      const message = err.message || 'Could not analyze photo. Please retry or take another photo.';
+      const message = refunded ? 'Your creature couldn’t hatch yet. Your seed was returned. Try again.' : 'Your creature couldn’t hatch yet. Free device space and reopen the incubator to recover your seed.';
       setAnalysisError(message);
     }
   };
@@ -652,7 +659,7 @@ export const IncubatorLab: React.FC<IncubatorLabProps> = ({
                 <div className="absolute inset-0 bg-slate-950/70 flex flex-col items-center justify-center p-3 text-center">
                   <div className="w-8 h-8 border-2 border-amber-400 border-t-transparent rounded-full animate-spin mb-2" />
                   <span className="text-xs font-bold text-amber-300 font-mono">
-                    Discovering life within...
+                    {isRefining ? 'Refining your creature…' : 'Discovering life within...'}
                   </span>
                 </div>
               )}

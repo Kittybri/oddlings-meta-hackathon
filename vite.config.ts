@@ -94,7 +94,7 @@ function basetenFallbackPlugin(): Plugin {
     if (url === '/api/baseten/analyze' && req.method === 'POST') {
       try {
         const body = await parseRequestBody(req);
-        const { imageBase64, objectHint, region } = body || {};
+        const { imageBase64, objectHint, region, refining } = body || {};
         if (!imageBase64 || typeof imageBase64 !== 'string') {
           res.setHeader('Content-Type', 'application/json');
           res.statusCode = 400;
@@ -105,7 +105,8 @@ function basetenFallbackPlugin(): Plugin {
         const dna = await analyzeObjectWithBaseten({
           imageBase64,
           objectHint: typeof objectHint === 'string' ? objectHint : undefined,
-          region
+          region,
+          refining: refining === true
         });
 
         res.setHeader('Content-Type', 'application/json');
@@ -125,7 +126,8 @@ function basetenFallbackPlugin(): Plugin {
         res.setHeader('Content-Type', 'application/json');
         res.statusCode = status;
         res.end(JSON.stringify({
-          error: err.message || 'Failed to analyze object with Meta Muse Spark.'
+          error: 'Your creature could not take shape. Please try again.',
+          retryable: err.retryable === true
         }));
       }
       return;
