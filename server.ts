@@ -455,7 +455,7 @@ async function startServer() {
       const relative = req.path.slice('/assets/'.length);
       const file = path.resolve(distPath, 'assets', relative);
       if (!file.startsWith(path.resolve(distPath, 'assets') + path.sep) || !/\.(js|css)$/.test(file) || !fs.existsSync(file + '.gz')) return next();
-      res.type(file).set('Content-Encoding', 'gzip');
+      res.type(path.extname(file)).set('Content-Encoding', 'gzip');
       res.sendFile(file + '.gz');
     });
     app.use(express.static(distPath));
