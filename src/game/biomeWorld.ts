@@ -1067,7 +1067,9 @@ export class BiomeHistoryManager {
   }
 
   public undo(currentWorld: BiomeWorldState): BiomeWorldState | null {
-    const previous = this.undoStack.pop();
+    const current = JSON.stringify({ tiles: currentWorld.tiles, decorations: currentWorld.decorations });
+    let previous = this.undoStack.pop();
+    while (previous && JSON.stringify(previous) === current) previous = this.undoStack.pop();
     if (!previous) return null;
 
     // Push current to redo
@@ -1085,7 +1087,9 @@ export class BiomeHistoryManager {
   }
 
   public redo(currentWorld: BiomeWorldState): BiomeWorldState | null {
-    const next = this.redoStack.pop();
+    const current = JSON.stringify({ tiles: currentWorld.tiles, decorations: currentWorld.decorations });
+    let next = this.redoStack.pop();
+    while (next && JSON.stringify(next) === current) next = this.redoStack.pop();
     if (!next) return null;
 
     // Push current to undo

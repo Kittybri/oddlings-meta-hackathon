@@ -395,7 +395,6 @@ export const BiomeWorldRenderer: React.FC<BiomeWorldRendererProps> = React.memo(
     }
 
     setIsDragging(true);
-    onStrokeStart();
 
     if (activeTool.type === 'decoration') {
       const placementCheck = canPlaceDecoration(world, activeTool.decorType, coords.x, coords.y, { snapToGround: true });
@@ -403,6 +402,7 @@ export const BiomeWorldRenderer: React.FC<BiomeWorldRendererProps> = React.memo(
         onPlaceDecoration(activeTool.decorType, coords.x, placementCheck.snappedY, activeTool.customItemId);
       }
     } else {
+      onStrokeStart();
       lastPaintedCell.current = coords;
       onPaintStroke(coords.x, coords.y);
     }

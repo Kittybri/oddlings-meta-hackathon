@@ -520,6 +520,8 @@ test('undo and redo properly restores placed decorations and settled positions',
   const countInitial = world.decorations.length;
 
   history.pushSnapshot(world);
+  // A pointer event and a placement callback used to record the same state twice.
+  history.pushSnapshot(world);
   // Add a boulder on flat ground at col 20 (high-air click at row 5)
   const check = canPlaceDecoration(world, 'rock', 20, 5);
   world = addDecoration(world, 'rock', 20, check.snappedY!);
@@ -532,6 +534,12 @@ test('undo and redo properly restores placed decorations and settled positions',
   // Redo decoration placement
   world = history.redo(world)!;
   assert.equal(world.decorations.length, countInitial + 1, 'Redo must restore placed decoration');
+  // One click also skips an unchanged paint or cancelled drag snapshot.
+  history.pushSnapshot(world);
+  world = history.undo(world)!;
+  assert.equal(world.decorations.length, countInitial);
+  world = history.redo(world)!;
+  assert.equal(world.decorations.length, countInitial + 1);
   const restoredRock = world.decorations.find((d) => d.gridX === 20 && d.type === 'rock');
   assert.ok(restoredRock);
   assert.equal(restoredRock?.gridY, check.snappedY, 'Restored rock must retain its grounded position');
