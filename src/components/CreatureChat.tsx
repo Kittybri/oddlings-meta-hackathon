@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom';
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -112,7 +113,7 @@ export const CreatureChat: React.FC<CreatureChatProps> = ({ creature, mood, onCl
     }
   };
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" onClick={onClose}>
       <div
         role="dialog"
@@ -186,5 +187,5 @@ export const CreatureChat: React.FC<CreatureChatProps> = ({ creature, mood, onCl
         </form>
       </div>
     </div>
-  );
+  , document.querySelector('.oddlings-app') || document.body);
 };

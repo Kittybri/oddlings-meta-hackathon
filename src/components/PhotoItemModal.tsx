@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom';
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -266,7 +267,7 @@ export const PhotoItemModal: React.FC<PhotoItemModalProps> = ({ onClose, onSaved
     </div>
   );
 
-  return (
+  return createPortal(
     <div
       className="fixed inset-0 z-[90] flex items-center justify-center bg-black/70 p-4"
       role="dialog"
@@ -439,5 +440,5 @@ export const PhotoItemModal: React.FC<PhotoItemModalProps> = ({ onClose, onSaved
         </div>
       </div>
     </div>
-  );
+  , document.querySelector('.oddlings-app') || document.body);
 };
