@@ -1,3 +1,5 @@
+import { gzipSync } from 'node:zlib';
+import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
@@ -145,7 +147,17 @@ function basetenFallbackPlugin(): Plugin {
 
 export default defineConfig(() => {
   return {
-    plugins: [react(), tailwindcss(), basetenFallbackPlugin()],
+    plugins: [react(), tailwindcss(), basetenFallbackPlugin(), {
+      name:'compressed-production-assets',
+      closeBundle() {
+        const compress = (dir: string) => { for (const entry of readdirSync(dir, {withFileTypes:true})) {
+          const file = path.join(dir, entry.name);
+          if (entry.isDirectory()) compress(file);
+          else if (/\.(js|css)$/.test(file)) writeFileSync(file + '.gz', gzipSync(readFileSync(file)));
+        }};
+        compress(path.resolve('dist'));
+      }
+    }],
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),

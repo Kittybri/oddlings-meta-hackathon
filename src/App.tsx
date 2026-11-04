@@ -43,7 +43,7 @@ import { normalizeHome } from './game/worldRegions';
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { CreatureDNA, IncubatorEgg } from './game/creatureTypes';
 import { 
   loadCreaturesFromStorage, 
@@ -59,10 +59,10 @@ import {
 } from './game/storage';
 import { HabitatThemeId } from './game/biomeWorldTypes';
 import { TitleScreen } from './components/TitleScreen';
-import { HabitatCanvas } from './components/HabitatCanvas';
-import { IncubatorLab } from './components/IncubatorLab';
-import { FusionLab } from './components/FusionLab';
-import { BestiaryJournal } from './components/BestiaryJournal';
+const HabitatCanvas = lazy(() => import('./components/HabitatCanvas').then(m => ({default:m.HabitatCanvas})));
+const IncubatorLab = lazy(() => import('./components/IncubatorLab').then(m => ({default:m.IncubatorLab})));
+const FusionLab = lazy(() => import('./components/FusionLab').then(m => ({default:m.FusionLab})));
+const BestiaryJournal = lazy(() => import('./components/BestiaryJournal').then(m => ({default:m.BestiaryJournal})));
 import { AwakenModal } from './components/AwakenModal';
 import { GoalChecklistModal } from './components/GoalChecklistModal';
 import { IntegrationStatusModal } from './components/IntegrationStatusModal';
@@ -273,7 +273,7 @@ export default function App() {
   };
 
   return (
-    <main className="oddlings-app relative w-screen h-screen bg-slate-950 text-slate-100 overflow-hidden font-sans select-none">
+    <Suspense fallback={<div role="status" className="fixed inset-0 grid place-items-center bg-slate-950 text-white">Opening your Oddlings…</div>}><main className="oddlings-app relative w-screen h-screen bg-slate-950 text-slate-100 overflow-hidden font-sans select-none">
       {/* Friendship heart celebrations */}
       {heartToasts.length > 0 && (
         <div aria-live="polite" className="fixed top-16 left-1/2 -translate-x-1/2 z-[80] flex flex-col items-center gap-2 pointer-events-none">
@@ -426,6 +426,6 @@ export default function App() {
           )}
         </>
       )}
-    </main>
+    </main></Suspense>
   );
 }

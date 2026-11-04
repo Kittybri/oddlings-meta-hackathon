@@ -448,6 +448,16 @@ async function startServer() {
   } else {
     // Static production build serving
     const distPath = path.resolve(path.dirname(fileURLToPath(import.meta.url)), 'dist');
+    // Only serve precompressed build assets; never touch API responses.
+    app.get('/assets/*', (req, res, next) => {
+      res.vary('Accept-Encoding');
+      if (!req.acceptsEncodings('gzip')) return next();
+      const relative = req.path.slice('/assets/'.length);
+      const file = path.resolve(distPath, 'assets', relative);
+      if (!file.startsWith(path.resolve(distPath, 'assets') + path.sep) || !/\.(js|css)$/.test(file) || !fs.existsSync(file + '.gz')) return next();
+      res.type(file).set('Content-Encoding', 'gzip');
+      res.sendFile(file + '.gz');
+    });
     app.use(express.static(distPath));
     app.get('*', (_req: Request, res: Response) => {
       res.sendFile(path.resolve(distPath, 'index.html'));

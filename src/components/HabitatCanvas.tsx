@@ -1911,6 +1911,7 @@ export const HabitatCanvas: React.FC<HabitatCanvasProps> = ({
                   }}
                   aria-pressed={selectedTreat.id === treat.id}
                   className={'pixel-btn pixel-treat ' + (selectedTreat.id === treat.id ? 'pb-gold is-picked' : 'pb-cream')}
+                  aria-label={treat.name}
                   title={treat.description}
                 >
                   <span>{treat.icon}</span>
@@ -1923,6 +1924,7 @@ export const HabitatCanvas: React.FC<HabitatCanvasProps> = ({
             </div>
           </div>
 
+          <details className="treat-description pixel-hint"><summary>{selectedTreat.name} · details</summary>{selectedTreat.description}</details>
           {/* Action Verbs */}
           {selectedCreature && selectedEffect && <div className="flex flex-col gap-1 max-w-xs">
             <button onClick={handleAbility} disabled={abilityWait > 0 || isEditMode || (selectedCreature.biomeId || 'greenhouse') !== activeHabitatTheme}
@@ -1930,7 +1932,7 @@ export const HabitatCanvas: React.FC<HabitatCanvasProps> = ({
               className="pixel-btn pb-sky w-full justify-center">
               {selectedCreature.specialAbility.icon} {selectedCreature.specialAbility.name} {abilityWait > 0 ? `(${abilityWait}s)` : '— USE ABILITY'}
             </button>
-            <span className="pixel-hint">Game effect: {selectedEffect.description}</span>
+            <span className="desktop-ability pixel-hint">Game effect: {selectedEffect.description}</span><details className="ability-description pixel-hint"><summary>Ability details</summary>{selectedEffect.description}</details>
             <span role="status" aria-live="polite" className="pixel-hint text-[#9be37c]">{abilityMessage}</span>
           </div>}
           <div className="flex flex-wrap items-center gap-2">

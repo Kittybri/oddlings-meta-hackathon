@@ -115,8 +115,8 @@ export function WorldViewport({ enabled, editMode, region, neighbors, world, onT
     if (!onTravel(direction)) { offset.current = null; el.scrollLeft = homeScroll(el); moving.current = false; }
   };
   const scroll = (n: number) => { userScrolling.current = true; scroller.current?.scrollBy({ left: n * scroller.current.clientWidth * .75, behavior: 'instant' }); };
-  if (!enabled) return <div data-world-region={region} className="world-viewport relative flex-1 min-h-0 w-full">{children}</div>;
-  return <div data-world-region={region} className="world-viewport relative flex-1 min-h-0 w-full">
+  if (!enabled) return <div data-explore-open={barOpen} data-world-region={region} className="world-viewport relative flex-1 min-h-0 w-full">{children}</div>;
+  return <div data-explore-open={barOpen} data-world-region={region} className="world-viewport relative flex-1 min-h-0 w-full">
     <WorldSky atmosphere={atmosphere} weather={weather} />
     <WindVisuals strength={weather.wind ?? 0} windy={weather.state === 'windy'} />
     {!barOpen ? (
@@ -146,7 +146,7 @@ export function WorldViewport({ enabled, editMode, region, neighbors, world, onT
  // Background trees sway harder as the weather's wind picks up (0 calm to 1 storm)
  '--wind': Math.max(0, Math.min(1, weather.wind ?? 0)), '--night-dark': Math.max(0, Math.min(1, (1 - atmosphere.light) / .85)), '--night-glow': Math.max(0, Math.min(1, Math.max((1 - atmosphere.light) / .65, weather.cloud * .9))), touchAction: pan ? 'pan-y' : 'pan-x', filter: `brightness(${(.5 + atmosphere.light * .5) * (1 - weather.cloud * .22)}) saturate(${1 - weather.cloud * .4})`, transition: 'filter 1s linear' } as React.CSSProperties}>
       <div className="world-strip flex h-full" style={{ pointerEvents: drag.current?.on ? 'none' : undefined }}>
-        {[0, 1, 2].map(i => <div key={i} className="relative h-full shrink-0" style={{ width: '33.333333%' }}>
+        {[0, 1, 2].map(i => <div key={i} className="world-region relative h-full shrink-0" style={{ width: '33.333333%' }}>
           {i === 1 ? children : <BiomeWorldRenderer sharedSky region={region + (i === 0 ? -1 : 1)} world={neighbors[i === 0 ? 0 : 1]} theme="greenhouse" isEditMode={false} activeTool={previewTool} brushSize={1} onPaintStroke={noop} onStrokeStart={noop} onStrokeEnd={noop} onPlaceDecoration={noop} onRemoveDecoration={noop} />}
           {raining && <RainLayer rain={weather.rain} ground={grounds[i]} />}
         </div>)}
