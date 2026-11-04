@@ -23,12 +23,12 @@ test('fusion reservation survives reload, refunds once, and retains completed re
   const w = new WalletBook(store);
   const id = w.beginFusion(10)!;
   assert.ok(id);
-  assert.equal(w.get().sparkles, 5);
+  assert.equal(w.get().sparkles, NEW_WALLET.sparkles - 10);
   const reload = new WalletBook(store);
   assert.equal(reload.get().fusion?.id, id);
   assert.equal(reload.refundFusion(id), true);
   assert.equal(reload.refundFusion(id), true);
-  assert.equal(reload.get().sparkles, 15);
+  assert.equal(reload.get().sparkles, NEW_WALLET.sparkles);
   assert.equal(w.finishFusion(id, {id:'late'} as CreatureDNA), false);
   const next = reload.beginFusion(10)!;
   assert.equal(reload.finishFusion(next, {id:'hybrid'} as CreatureDNA), true);
