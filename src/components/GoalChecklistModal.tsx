@@ -3,7 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { walletBook } from '../game/lifeSeeds';
 import { FirstRunGoals, CreatureDNA } from '../game/creatureTypes';
 
 interface GoalChecklistModalProps {
@@ -25,6 +26,17 @@ export const GoalChecklistModal: React.FC<GoalChecklistModalProps> = ({
     (goals.fusedSpecies ? 1 : 0) +
     (goals.builtBiomeHome ? 1 : 0);
   const allComplete = completedCount === 4;
+  const rewardId = 'first-run-goals-v1';
+  const [claimed, setClaimed] = useState(() => walletBook.hasReceipt(rewardId));
+  const [rewardError, setRewardError] = useState('');
+  useEffect(() => walletBook.subscribe(() => setClaimed(walletBook.hasReceipt(rewardId))), []);
+
+  const claimReward = () => {
+    if (!allComplete) return;
+    const result = walletBook.claimOnce(rewardId, 0, 0, 100);
+    setClaimed(result !== 'failed');
+    setRewardError(result === 'failed' ? 'Could not save your reward. Please try again.' : '');
+  };
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4 select-none animate-in fade-in duration-200">
@@ -194,9 +206,20 @@ export const GoalChecklistModal: React.FC<GoalChecklistModalProps> = ({
         {allComplete && (
           <div className="p-3.5 rounded-xl bg-gradient-to-r from-amber-500/20 to-pink-500/20 border border-amber-500/40 text-center">
             <span className="text-sm font-bold text-amber-300 block">🎉 ALL FIRST-RUN GOALS COMPLETE!</span>
-            <span className="text-xs text-slate-300">You have verified the complete core gameplay loop of ODDLINGS.</span>
+            <span className="text-xs text-slate-300">You discovered, cared, fused, and built a home!</span>
           </div>
         )}
+
+        <div className="text-center text-xs text-amber-200">
+          <button
+            onClick={claimReward}
+            disabled={!allComplete || claimed}
+            className="w-full min-h-11 py-2 rounded-xl bg-amber-500 text-slate-950 font-bold disabled:bg-slate-800 disabled:text-slate-400"
+          >
+            {claimed ? '✓ 100 Sparkles claimed' : allComplete ? '✨ Claim 100 Sparkles' : '✨ Complete all 4 goals to earn 100 Sparkles'}
+          </button>
+          {rewardError && <p role="alert" className="mt-2 text-rose-300">{rewardError}</p>}
+        </div>
 
         {/* Bottom CTA */}
         <button
