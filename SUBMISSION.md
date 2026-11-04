@@ -4,7 +4,7 @@ Play: https://oddlings-meta.ai.studio/
 Source: https://github.com/Kittybri/oddlings-meta-hackathon
 License: Apache-2.0 (see LICENSE).
 
-The November 4 release passed 151 tests, TypeScript, and the production build. The public health check and habitat load passed after redeployment. See the [README photo gallery](README.md#first-photo-check) for the first results from four creator photos and two artwork routes. Final video and submission status remain unverified.
+The November 4 release passed 151 tests, TypeScript, and the production build. The public health check and habitat load passed after redeployment. See the [README photo gallery](README.md#first-photo-check) for the first results from four creator photos and two artwork routes, and the [reviewer guide](docs/REVIEWER-GUIDE.md#what-was-verified) for the evidence and scope of each check. Final video and submission status remain unverified.
 
 Participant guide: https://cerebralvalley.ai/e/meta-ai-developer-hackathon/details
 Submission form: https://cerebralvalley.ai/e/meta-ai-developer-hackathon/hackathon/submit
@@ -76,7 +76,7 @@ Fresh saves start with 500 Sparkles. Four first-run goals unlock a one-time 50-S
 
 ### Final automated verification
 
-November 4, 2026 (Pacific): **150 tests passed, 0 failed, 0 skipped; TypeScript and build passed.** An isolated API server on port 3127 and tests used blank provider keys. Latest main entry is about 447 kB minified / 134 kB gzip, with HabitatCanvas split into about 459 kB / 235 kB gzip. This does not establish a frame-rate or phone-performance guarantee.
+Earlier on November 4, 2026 (Pacific), the reconciliation passed 150 tests, TypeScript, and the build. The isolated API server and tests used blank provider keys. That build's main entry was about 447 kB minified / 134 kB gzip, with HabitatCanvas split into about 459 kB / 235 kB gzip. The later 151-test release is recorded above.
 
 Historical verification follows.
 
