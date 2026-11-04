@@ -407,3 +407,13 @@
 .picker{min-width:0;width:100%;font:600 12px ui-monospace,monospace;color:#dce6f5}.picker-filter,.picker-cards{display:flex;align-items:center;gap:6px;overflow-x:auto;padding:3px}.picker-filter input,.picker-filter button,.picker-cards button,.picker-tools-toggle{background:#142036;border:1px solid #43516b;padding:5px 9px;white-space:nowrap}.picker-filter input{width:165px}.picker [aria-pressed=true]{border-color:#ff76b7;background:#4d2347;color:white}.picker-cards button{display:grid;justify-items:center;gap:3px;min-width:96px}.picker-thumb{display:grid;place-items:center;width:42px;height:37px}.picker-thumb img{height:100%;object-fit:contain;image-rendering:pixelated}.picker-thumb i{display:none}.picker-thumb i:only-child{display:block;font-size:24px}.picker-tools{display:flex;gap:5px}.picker-tools-toggle{display:none}
 @media(min-width:640px){.picker-tools-toggle{display:block}.picker-tools:not([data-open=true]){display:none}.biome-toolbar #decor-trash{width:auto;margin:0;padding:4px}.biome-toolbar #decor-trash span:last-child{display:none}.biome-toolbar #decor-trash:hover span:last-child{display:inline}}
 @media(min-width:1025px){.build-toolbox{padding:4px 8px;margin-bottom:3px}.build-toolbox>div{margin-block:0;padding-block:2px}.build-toolbox .picker{display:flex;align-items:center;gap:8px}.build-toolbox .picker-filter{max-width:38%;flex-shrink:0}.build-toolbox .picker-cards{flex:1}.picker-cards button{display:flex;align-items:center;min-width:auto;padding:2px 6px}.picker-thumb{width:24px;height:24px}.biome-toolbar #decor-trash.phone-control{display:inline-flex}}
+
+.pixel-dock .care-toggle { display:none; }
+@media (min-width:640px) and (min-height:451px), (min-width:1025px) {
+/* Keep care within reach while leaving the habitat in view. */
+.pixel-dock { padding: 5px 10px; gap: 6px; }
+.pixel-dock .care-toggle { display: inline-flex; align-items: center; }
+.pixel-dock[data-tray="false"] { justify-content: flex-start; }
+.pixel-dock[data-tray="false"] > :not(.care-toggle,.phone-resident,[role="status"]) { display: none; }
+.pixel-dock[data-tray="false"] .phone-resident { display: inline-flex; align-items: center; gap: 6px; }
+}

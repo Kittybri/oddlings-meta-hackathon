@@ -1899,7 +1899,8 @@ export const HabitatCanvas: React.FC<HabitatCanvasProps> = ({
               🌱 Garden Adventure: {adventureHint}
             </div>
           )}
-          <button className="phone-control" aria-expanded={tray} onClick={() => setTray(!tray)}>{tray ? "Close treats" : "🍬 Treats"}</button>
+          <button className="phone-control care-phone-toggle" aria-expanded={tray} onClick={() => setTray(!tray)}>{tray ? "Close treats" : "🍬 Treats"}</button>
+          <button className="care-toggle pixel-btn pb-cream" aria-expanded={tray} onClick={() => setTray(!tray)}>{tray ? "▾ Hide care" : "▴ Creature care"}</button>
           {selectedCreature && <strong className="phone-resident"><OddlingAvatar creature={selectedCreature} size={28} mood="happy" showAura={false} faceCrop />{selectedCreature.name}</strong>}
           <div className="food-picker flex items-center gap-2">
             <span className="pixel-label">
