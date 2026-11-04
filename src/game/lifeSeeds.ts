@@ -12,7 +12,7 @@ import type { CreatureDNA } from './creatureTypes';
 
 export const START_SEEDS = 10;
 export const START_GEMS = 5;
-export const START_SPARKLES = 15; // enough to try the shop once
+export const START_SPARKLES = 500; // starting allowance for a full judging playthrough
 export const QUEST_CHECKS_PER_DAY = 15; // photo checks, so a few misses still leave room for wins
 export const GEM_EVERY_QUESTS = 2; // a Craft Gem for every 2nd finished quest
 export const QUEST_SPARKLES = 5;
