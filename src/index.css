@@ -392,15 +392,18 @@
  .biome-toolbar[data-more=true][data-editing=true] >div:first-child >div:first-child {display:flex;width:100%;order:2}
  .build-toolbox {max-height:32dvh;border:1px solid #527481;background:#151e32}
  .build-toolbox > div:first-child >div:first-child {display:flex;overflow-x:auto;flex-wrap:nowrap}
- .build-toolbox >div:nth-last-child(2) {margin-top:4px}
+ .build-toolbox >.build-items {margin-top:4px}
 }
 @media(max-width:639px), (max-height:450px) and (max-width:1024px) and (orientation:landscape) {
  .build-toolbox {display:flex;flex-direction:column;gap:6px}
  .build-toolbox >div:first-child {display:contents}
  .build-toolbox >div:first-child >div:first-child {order:0;flex-shrink:0}
- .build-toolbox >div:nth-last-child(2) {order:1;overflow:visible;flex:none}
+ .build-toolbox >.build-items {order:1;overflow:visible;flex:none}
  .build-toolbox >div:first-child >div:nth-child(2) {order:2}
  .build-toolbox >.decor-trash {order:3}
- .build-toolbox >div:last-child {order:4}
- .build-toolbox >div:nth-last-child(2) >div {flex-wrap:wrap}
+ 
+ .build-toolbox >.build-items >div {flex-wrap:wrap}
 }
+.picker{min-width:0;width:100%;font:600 12px ui-monospace,monospace;color:#dce6f5}.picker-filter,.picker-cards{display:flex;align-items:center;gap:6px;overflow-x:auto;padding:3px}.picker-filter input,.picker-filter button,.picker-cards button,.picker-tools-toggle{background:#142036;border:1px solid #43516b;padding:5px 9px;white-space:nowrap}.picker-filter input{width:165px}.picker [aria-pressed=true]{border-color:#ff76b7;background:#4d2347;color:white}.picker-cards button{display:grid;justify-items:center;gap:3px;min-width:96px}.picker-thumb{display:grid;place-items:center;width:42px;height:37px}.picker-thumb img{height:100%;object-fit:contain;image-rendering:pixelated}.picker-thumb i{display:none}.picker-thumb i:only-child{display:block;font-size:24px}.picker-tools{display:flex;gap:5px}.picker-tools-toggle{display:none}
+@media(min-width:640px){.picker-tools-toggle{display:block}.picker-tools:not([data-open=true]){display:none}.biome-toolbar #decor-trash{width:auto;margin:0;padding:4px}.biome-toolbar #decor-trash span:last-child{display:none}.biome-toolbar #decor-trash:hover span:last-child{display:inline}}
+@media(min-width:1025px){.build-toolbox{padding:4px 8px;margin-bottom:3px}.build-toolbox>div{margin-block:0;padding-block:2px}.build-toolbox .picker{display:flex;align-items:center;gap:8px}.build-toolbox .picker-filter{max-width:38%;flex-shrink:0}.build-toolbox .picker-cards{flex:1}.picker-cards button{display:flex;align-items:center;min-width:auto;padding:2px 6px}.picker-thumb{width:24px;height:24px}.biome-toolbar #decor-trash.phone-control{display:inline-flex}}

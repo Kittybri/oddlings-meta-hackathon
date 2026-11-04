@@ -1,3 +1,5 @@
+import { GardenProp } from './GardenProp';
+import oakPreview from '../../garden-tree-px.png';
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -68,10 +70,11 @@ export const BiomeEditorToolbar: React.FC<BiomeEditorToolbarProps> = ({
   const [activeTab, setActiveTab] = useState<EditorToolTab>('terrain');
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [pendingTemplate, setPendingTemplate] = useState<{ id: StarterTemplateId; label: string; desc: string; icon: string } | null>(null);
-  const [isToolboxCollapsed, setIsToolboxCollapsed] = useState(() => typeof window !== 'undefined' && window.innerWidth < 640);
+  const [isToolboxCollapsed, setIsToolboxCollapsed] = useState(false);
+  useEffect(() => { if (!isEditMode) setIsToolboxCollapsed(false); }, [isEditMode]);
   const pickTool = (tool: EditorTool) => {
     onSelectTool(tool);
-    if (window.matchMedia("(max-width:639px), (max-height:450px) and (orientation:landscape)").matches) setIsToolboxCollapsed(true);
+    setIsToolboxCollapsed(true);
   };
   const [showHelpModal, setShowHelpModal] = useState(false);
   const [showSaveToast, setShowSaveToast] = useState(false);
@@ -120,6 +123,22 @@ export const BiomeEditorToolbar: React.FC<BiomeEditorToolbarProps> = ({
     ...BUILD_ITEMS.filter((item) => !TREE_TYPES.includes(item.type)),
   ];
 
+  const [group, setGroup] = useState('Plants');
+  const [query, setQuery] = useState('');
+  const [recent, setRecent] = useState<DecorationType[]>([]);
+  const [toolsOpen, setToolsOpen] = useState(false);
+  const groups = ['All', 'Recent', 'Plants', 'Furniture', 'Buildings', 'Lights', 'Farming', 'Landscape'];
+  function category(label: string) {
+    if (/wheat|hay|carrot|pumpkin/i.test(label)) return 'Farming';
+    if (/oak|tree|cherry|sapling|shrub|blossom|seed|bamboo|pine|mushroom/i.test(label)) return 'Plants';
+    if (/lamp|lantern|fire|glow/i.test(label)) return 'Lights';
+    if (/shelter|cottage|door|arch|gazebo|windmill|fence|gate/i.test(label)) return 'Buildings';
+    if (/boulder|fountain|well/i.test(label)) return 'Landscape';
+    return 'Furniture';
+  }
+  const visible = (group === 'Recent' && !query.trim()
+    ? recent.flatMap(type => decorationsList.filter(item => item.type === type))
+    : decorationsList.filter(item => query.trim() ? item.label.toLowerCase().includes(query.trim().toLowerCase()) : group === 'All' || category(item.label) === group));
   const templatesList: Array<{ id: StarterTemplateId; label: string; desc: string; icon: string }> = [
     { id: 'living_garden', label: 'Living Garden', desc: 'Lush terraced hills, shallow pond, footbridge & flora', icon: '🌿' },
     { id: 'cozy_clearing', label: 'Cozy Clearing', desc: 'Rolling hills, oak tree, flowers & bridge', icon: '🏡' },
@@ -322,7 +341,7 @@ export const BiomeEditorToolbar: React.FC<BiomeEditorToolbarProps> = ({
               className="px-2 py-1 rounded-md bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-200 text-xs font-mono border border-slate-800 cursor-pointer"
               title={isToolboxCollapsed ? 'Expand Toolbox' : 'Collapse Toolbox'}
             >
-              <span className="builder-word">Tools · </span>{isToolboxCollapsed ? '▾ '  + (activeTool.type === 'brush' ? activeTool.material : activeTool.type === 'grab' ? 'Move' : activeTool.type) : '▴ Hide'}
+              <span className="builder-word">Tools · </span>{isToolboxCollapsed ? '▾ Toolbox · ' + (activeTool.type === 'brush' ? activeTool.material : activeTool.type === 'grab' ? 'Move' : activeTool.type === 'decoration' ? activeTool.decorType : activeTool.type) : '▴ Hide'}
             </button>
           </div>
         )}
@@ -419,6 +438,8 @@ export const BiomeEditorToolbar: React.FC<BiomeEditorToolbarProps> = ({
                 <span>GRAB</span>
               </button>
 
+              <button className="picker-tools-toggle" aria-expanded={toolsOpen} onClick={() => setToolsOpen(!toolsOpen)}>Tools ▾</button>
+              <div className="picker-tools" data-open={toolsOpen}>
               <button
                 onClick={() => {
                   sound.playClick();
@@ -464,11 +485,7 @@ export const BiomeEditorToolbar: React.FC<BiomeEditorToolbarProps> = ({
               >
                 Reset
               </button>
-            </div>
-
-
-          </div>
-
+              </div>
             {/* Trash: drag a placed item here and let go to delete it */}
             <div
               id="decor-trash"
@@ -478,8 +495,13 @@ export const BiomeEditorToolbar: React.FC<BiomeEditorToolbarProps> = ({
               <span className="decor-trash-can text-base" aria-hidden="true">🗑️</span>
               <span>Drag here to delete</span>
             </div>
+            </div>
+
+
+          </div>
+
           {/* Bottom row: Tab specific tools */}
-          <div className="flex items-center gap-2 overflow-x-auto py-1">
+          <div className="build-items flex items-center gap-2 overflow-x-auto py-1">
             {activeTab === 'terrain' && (
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-[10px] font-mono text-slate-500 font-bold uppercase mr-1">NATURAL:</span>
@@ -553,28 +575,16 @@ export const BiomeEditorToolbar: React.FC<BiomeEditorToolbarProps> = ({
             )}
 
             {activeTab === 'decorations' && (
-              <div className="flex flex-wrap items-center gap-2 w-full min-w-0 max-h-36 overflow-y-auto p-1">
-                {decorationsList.map((dec) => {
-                  const isSelected = activeTool.type === 'decoration' && activeTool.decorType === dec.type;
-                  return (
-                    <button
-                      key={dec.type}
-                      onClick={() => {
-                        sound.playClick();
-                        pickTool({ type: 'decoration', decorType: dec.type });
-                      }}
-                      className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-mono font-medium whitespace-nowrap transition-all ${
-                        isSelected
-                          ? 'bg-pink-500 text-slate-950 font-bold shadow-md scale-105 ring-2 ring-pink-400'
-                          : 'bg-slate-900 text-slate-300 hover:bg-slate-800 border border-slate-800'
-                      }`}
-                    >
-                      <span>{dec.icon}</span>
-                      <span>{dec.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
+              <section className="picker" aria-label="Decoration library">
+                <div className="picker-filter"><input type="search" aria-label="Search all decorations" placeholder="Search decorations…" value={query} onChange={e=>setQuery(e.target.value)} onKeyDown={e=>e.stopPropagation()} />
+                  {groups.map(g=><button key={g} aria-pressed={!query && group===g} onClick={()=>{setGroup(g);setQuery('');}}>{g}</button>)}
+                </div>
+                <div className="picker-cards">{visible.map(dec=><button key={dec.type} aria-pressed={activeTool.type==='decoration' && activeTool.decorType===dec.type} onClick={()=>{
+                  sound.playClick(); pickTool({type:'decoration',decorType:dec.type});
+                  setRecent(prev=>[dec.type,...prev.filter(t=>t!==dec.type)].slice(0,8));
+                }}><span className="picker-thumb" aria-hidden="true">{dec.type==='tree' ? <img src={oakPreview} alt=""/> : <GardenProp type={dec.type}/>}<i>{dec.icon}</i></span>{dec.label}</button>)}
+                {!visible.length && <span>{group==='Recent' && !query ? 'Select a decoration to see it here.' : 'No matching decorations.'}</span>}</div>
+              </section>
             )}
 
             {/* My photo items: things made from the player's own photos, kept apart from the built-in decorations */}
@@ -650,15 +660,6 @@ export const BiomeEditorToolbar: React.FC<BiomeEditorToolbarProps> = ({
             )}
           </div>
 
-          {/* Quick instructions bar */}
-          <div className="flex items-center justify-between text-[10px] font-mono text-slate-400 pt-1 border-t border-slate-800/60">
-            <span>
-              💡 Click or drag to paint · 1 drag = 1 undo · Hotkeys: [B] Brush, [E] Erase, [Ctrl+Z] Undo
-            </span>
-            <span className="hidden sm:inline text-amber-400/80">
-              Creatures interact with solid surfaces, water & shelters
-            </span>
-          </div>
         </div>
       )}
 
