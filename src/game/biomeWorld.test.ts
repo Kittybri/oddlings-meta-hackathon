@@ -471,7 +471,13 @@ test('terrain edits automatically re-settle affected decorations to new surface'
   const initialTree = world.decorations.find((d) => d.gridX === 10 && d.type === 'tree');
   assert.equal(initialTree?.gridY, 17);
 
-  // 1. Elevate terrain under tree: paint a 3-block higher mound at row 14
+  world = paintTiles(world, 10, 4, 'snow', 2);
+  assert.equal(world.decorations.find(d => d.id === initialTree?.id)?.gridY, 17);
+  assert.equal(healWorldDecorations(world).decorations.find(d => d.id === initialTree?.id)?.gridY, 17);
+
+  // A continuous mound built directly against the support does raise the tree.
+  world = paintTiles(world, 10, 16, 'grass', 1);
+  world = paintTiles(world, 10, 15, 'grass', 1);
   world = paintTiles(world, 10, 14, 'grass', 1);
   const elevatedTree = world.decorations.find((d) => d.gridX === 10 && d.type === 'tree');
   assert.equal(elevatedTree?.gridY, 14, 'Tree must re-settle upwards onto newly painted hill surface');

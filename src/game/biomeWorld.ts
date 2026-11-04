@@ -400,7 +400,13 @@ export function findSupportingSurfaceForProp(
  */
 export function settleDecorationsAfterTerrainEdit(world: BiomeWorldState): BiomeWorldState {
   const settledDecorations = world.decorations.map((decor) => {
-    const supportedY = findSupportingSurfaceForProp(world, decor.gridX);
+    // Follow only the ground touching this prop, even under a floating platform.
+    let row = decor.gridY;
+    while (row > 0 && isSolidTile(world.tiles[row]?.[decor.gridX]) &&
+           isSolidTile(world.tiles[row - 1]?.[decor.gridX])) {
+      row--;
+    }
+    const supportedY = findSupportingSurfaceForProp(world, decor.gridX, row);
     if (supportedY !== -1 && supportedY !== decor.gridY) {
       return { ...decor, gridY: supportedY };
     }
@@ -415,6 +421,17 @@ export function settleDecorationsAfterTerrainEdit(world: BiomeWorldState): Biome
 
 export const healWorldDecorations = settleDecorationsAfterTerrainEdit;
 
+export function brushBounds(x: number, y: number, size: 1 | 2 | 3) {
+  const offset = Math.floor((size - 1) / 2);
+  const left = x - offset;
+  const top = y - offset;
+  return {
+    left: Math.max(0, left),
+    top: Math.max(0, top),
+    right: Math.min(GRID_WIDTH, left + size),
+    bottom: Math.min(GRID_HEIGHT, top + size)
+  };
+}
 /**
  * Paints a tile or cluster of tiles based on brush size (1, 2, or 3).
  * Automatically re-settles affected decorations to the new terrain surface.
@@ -427,18 +444,10 @@ export function paintTiles(
   brushSize: 1 | 2 | 3 = 1
 ): BiomeWorldState {
   const nextTiles = cloneTiles(world.tiles);
-  const half = Math.floor(brushSize / 2);
-
-  const startX = brushSize % 2 === 1 ? targetGridX - half : targetGridX;
-  const startY = brushSize % 2 === 1 ? targetGridY - half : targetGridY;
-
-  for (let dy = 0; dy < brushSize; dy++) {
-    for (let dx = 0; dx < brushSize; dx++) {
-      const gx = startX + dx;
-      const gy = startY + dy;
-      if (gx >= 0 && gx < GRID_WIDTH && gy >= 0 && gy < GRID_HEIGHT) {
-        nextTiles[gy][gx] = material;
-      }
+  const bounds = brushBounds(targetGridX, targetGridY, brushSize);
+  for (let y = bounds.top; y < bounds.bottom; y++) {
+    for (let x = bounds.left; x < bounds.right; x++) {
+      nextTiles[y][x] = material;
     }
   }
 

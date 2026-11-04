@@ -19,6 +19,7 @@ import {
 import {
   GRID_WIDTH,
   GRID_HEIGHT,
+  brushBounds,
   isSolidTile,
   isWaterTile,
   computeSeedGrowth,
@@ -1607,6 +1608,7 @@ export const BiomeWorldRenderer: React.FC<BiomeWorldRendererProps> = React.memo(
       <GrassLayer world={world} actors={grassActors} residents={grassResidents} heldId={heldCreatureId} paused={isEditMode} />
 
       {isEditMode && hoverGrid && activeTool.type !== 'grab' && (() => {
+        const bounds = brushBounds(hoverGrid.x, hoverGrid.y, activeTool.type === 'decoration' ? 1 : brushSize);
         let isValidPlacement = true;
         let statusLabel = '';
         let snappedGroundY: number | undefined = undefined;
@@ -1667,12 +1669,12 @@ export const BiomeWorldRenderer: React.FC<BiomeWorldRendererProps> = React.memo(
 
             {/* Hover cursor box */}
             <div
-              className={`absolute pointer-events-none border-2 rounded-sm z-30 transition-all duration-75 ${borderBgClass}`}
+              className={`absolute pointer-events-none border-2 rounded-sm z-30 ${borderBgClass}`}
               style={{
-                left: `${((hoverGrid.x - Math.floor(brushSize / 2)) / GRID_WIDTH) * 100}%`,
-                top: `${((hoverGrid.y - Math.floor(brushSize / 2)) / GRID_HEIGHT) * 100}%`,
-                width: `${(brushSize / GRID_WIDTH) * 100}%`,
-                height: `${(brushSize / GRID_HEIGHT) * 100}%`
+                left: `${(bounds.left / GRID_WIDTH) * 100}%`,
+                top: `${(bounds.top / GRID_HEIGHT) * 100}%`,
+                width: `${((bounds.right - bounds.left) / GRID_WIDTH) * 100}%`,
+                height: `${((bounds.bottom - bounds.top) / GRID_HEIGHT) * 100}%`
               }}
             >
               <div className={`absolute -top-5 left-0 px-1 py-0.5 rounded bg-slate-900/90 text-[9px] font-mono whitespace-nowrap border ${labelColorClass}`}>
