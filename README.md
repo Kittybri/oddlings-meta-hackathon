@@ -13,7 +13,7 @@
 | [Indie track criterion](https://dev.meta.ai/events/global-hackathon) | What Oddlings delivers | Where to verify |
 | --- | --- | --- |
 | **Creativity** | Objects from your own space become companions you can care for, talk to, and bring into a habitat you build. Fusion gives two discoveries a shared descendant with recorded lineage. | [First photo check](#first-photo-check) · [Fusion Lab source](src/components/FusionLab.tsx) |
-| **Technical ambition** | Muse Spark Open turns a photo into structured creature traits. Muse Image draws the creature from the photo. Oddlings maps generated abilities to game effects, such as watering planted seeds or restoring energy. Fusion uses both models and both parents. | [Model roles](#where-meta-ai-comes-in) · [Server routes](server.ts) |
+| **Technical ambition** | Two Meta models turn photos into playable creatures and fuse pairs into hybrids with recorded lineage. Residents remember interactions and send players on photo quests. A persistent habitat stores player edits, while a shared job system handles model calls, retries, and limits. | [How the systems work](#what-oddlings-builds-around-the-models) · [Server routes](server.ts) |
 | **Works in the game** | A live fan photo went through recognition, incubation, hatch, claim, and reload. The same evidence batch includes four creature results, an item drawing, and an AI backdrop. The tested source passed 151 automated tests, TypeScript, and the production build. | [Play the live build](https://oddlings-meta.ai.studio/) · [Photo evidence](#first-photo-check) · [Verified source](https://github.com/Kittybri/oddlings-meta-hackathon/tree/c26238aef3de071688aef5914fe9d4aaddbd120d) |
 
 ## Your first adventure
@@ -41,6 +41,13 @@ The game generated this backdrop through its Meta biome-art route. The sample us
 - **Muse Spark Open** reads your photo and designs the Oddling’s traits. It also powers conversations, photo quest checks, and fusion traits.
 - **Muse Image** draws creatures, hybrid artwork, placeable photo items, and photo biome scenery.
 - **Oddlings** handles the game rules. It turns generated traits into abilities, keeps track of saves, and manages the world you build.
+
+### What Oddlings builds around the models
+
+- **Photo to playable creature.** Muse Spark Open extracts the object's identity and proposes traits and an ability. Muse Image draws from the original photo. Oddlings maps the ability to a defined game effect such as watering seeds or restoring energy. Fusion sends both parents' traits to Muse Spark and both parents' images to Muse Image, then saves the hybrid's lineage. [Incubator](src/components/IncubatorLab.tsx) · [Fusion Lab](src/components/FusionLab.tsx)
+- **Residents that remember.** Chat uses the resident's recent memories, mood, friendship, and the current weather. In photo quests, Muse Spark checks a new real-world photo against the creature's request. A match changes the resident's trust and energy and adds a memory. [Creature chat](src/components/CreatureChat.tsx) · [Photo quests](src/components/PhotoQuest.tsx)
+- **A world players can reshape.** Photos can become scenery or placeable items. Players edit terrain, move residents between saved areas, and use abilities in the habitat. The Garden Adventure records which residents helped a seed bloom. Terrain rendering caches each region as an image so ordinary interactions can reuse it. [Terrain renderer](src/components/BiomeWorldRenderer.tsx) · [Garden Adventure](src/game/gardenAdventure.ts)
+- **AI jobs that can fail cleanly.** Shared Redis storage holds background job results and enforces request limits across server instances. Creature recognition retries eligible failures once. Photo items also retry if a local silhouette check rejects the drawing. When a reserved action fails, the game returns the applicable resource and tells the player what happened. [Shared AI store](server/sharedAiStore.ts) · [Photo item quality checks](src/game/itemArtQuality.ts) · [Failure tests](server/sharedAiStore.test.ts)
 
 ### How the art is made
 
