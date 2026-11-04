@@ -34,7 +34,7 @@ test('fusion reservation survives reload, refunds once, and retains completed re
   assert.equal(reload.finishFusion(next, {id:'hybrid'} as CreatureDNA), true);
   assert.equal(new WalletBook(store).get().fusion?.result?.id, 'hybrid');
   assert.equal(reload.claimFusion(next), true);
-  assert.equal(reload.get().sparkles, 5);
+  assert.equal(reload.get().sparkles, NEW_WALLET.sparkles - 10);
 });
 
 test('a failed second region write still exposes both committed transfer states after reload', () => {
