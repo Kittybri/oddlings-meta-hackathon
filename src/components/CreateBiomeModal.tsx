@@ -7,7 +7,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { sound } from '../game/soundSynth';
 import { 
   convertToLocalPixelArt, 
-  generateSampleCityPalmsDataUrl, 
+
   checkServerPixelateStatus,
   PixelArtProcessResult 
 } from '../game/pixelArtProcessor';
@@ -24,6 +24,8 @@ import { preparePhotoForUpload } from '../game/photoCompression';
 
 // Pixel detail 0 means "draw it with Meta Muse Image" instead of shrinking the photo on the device
 const META_DETAIL = 0;
+const SAMPLE_PHOTO = '/palm-city-original.webp';
+const SAMPLE_BACKDROP = '/palm-city-ai.png';
 
 /** Draws an image into a 640x360 game backdrop (cropped to fill) and a 160x90 thumbnail. */
 function toBackdrop(src: string, brightness: number): Promise<{ background: string; thumb: string }> {
@@ -186,7 +188,7 @@ export const CreateBiomeModal: React.FC<CreateBiomeModalProps> = ({
   const handleUseSamplePhoto = () => {
     sound.playClick();
     setErrorMessage(null);
-    const sampleDataUrl = generateSampleCityPalmsDataUrl();
+    const sampleDataUrl = SAMPLE_PHOTO;
     setBiomeName('Palm City Terrace');
     processPhotoSource(sampleDataUrl);
   };
@@ -197,6 +199,19 @@ export const CreateBiomeModal: React.FC<CreateBiomeModalProps> = ({
     setOriginalPhotoUrl(photoDataUrl);
     setIsProcessing(true);
     setErrorMessage(null);
+
+    if (photoDataUrl === SAMPLE_PHOTO) {
+      try {
+        const { background, thumb } = await toBackdrop(SAMPLE_BACKDROP, brightness);
+        if (request !== requestId.current) return;
+        setPixelResult({ backgroundDataUrl: background, thumbnailDataUrl: thumb, generationMode: 'ai_generated', width: 640, height: 360 });
+      } catch {
+        if (request === requestId.current) setErrorMessage('The sample backdrop could not load. Please try again.');
+      } finally {
+        if (request === requestId.current) setIsProcessing(false);
+      }
+      return;
+    }
 
     if (detail === META_DETAIL) {
       // Meta Muse Image redraws the scene as pixel game scenery (about 30 seconds)
@@ -493,7 +508,7 @@ export const CreateBiomeModal: React.FC<CreateBiomeModalProps> = ({
             </div>
           )}
 
-          {originalPhotoUrl && <fieldset className="grid grid-cols-1 sm:grid-cols-2 gap-3 rounded-xl bg-slate-950 p-3">
+          {originalPhotoUrl && originalPhotoUrl !== SAMPLE_PHOTO && <fieldset className="grid grid-cols-1 sm:grid-cols-2 gap-3 rounded-xl bg-slate-950 p-3">
             <legend className="text-xs text-cyan-200 px-1">Tune your backdrop</legend>
             <label className="text-xs text-slate-300">Pixel detail
               <select aria-label="Pixel detail" value={detail} onChange={e => setDetail(Number(e.target.value))} className="block w-full bg-slate-800 p-2 rounded mt-1">
@@ -517,10 +532,10 @@ export const CreateBiomeModal: React.FC<CreateBiomeModalProps> = ({
 
           <div className="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800 text-xs text-slate-300 space-y-1">
             <div className="flex items-center gap-1.5 font-semibold text-cyan-300">
-              <span>{detail === META_DETAIL ? '🌐 AI Backdrop Mode (Network Transmission)' : '🔒 Local Device Mode (100% Client-Side)'}</span>
+              <span>{originalPhotoUrl === SAMPLE_PHOTO ? '✨ AI-generated sample preview' : detail === META_DETAIL ? '🌐 AI Backdrop Mode (Network Transmission)' : '🔒 Local Device Mode (100% Client-Side)'}</span>
             </div>
             <p className="text-slate-400">
-              {detail === META_DETAIL
+              {originalPhotoUrl === SAMPLE_PHOTO ? 'This example pairs the original city photograph with a previously AI-generated pixel-art backdrop.' : detail === META_DETAIL
                 ? 'Meta Muse Image transmits a compressed copy of your photo to the Meta AI server to redraw your scene into pixel game scenery (~30 seconds). Meta\'s own data policy applies to that copy.'
                 : 'Chunky, Classic, and Detailed downscale and quantize colors 100% locally on your device using Canvas. No photo data or image pixels are ever transmitted to any server.'}
             </p>
@@ -535,7 +550,7 @@ export const CreateBiomeModal: React.FC<CreateBiomeModalProps> = ({
                 {/* Generation Mode Badge */}
                 <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-600/60 font-semibold flex items-center gap-1">
                   <span>{pixelResult.generationMode === 'ai_generated' ? '✨' : '⚡'}</span>
-                  <span>{pixelResult.generationMode === 'ai_generated' ? 'Drawn by Meta Muse Image' : 'Local photo pixel conversion'}</span>
+                  <span>{pixelResult.generationMode === 'ai_generated' ? (originalPhotoUrl === SAMPLE_PHOTO ? 'AI-generated sample backdrop' : 'Drawn by Meta Muse Image') : 'Local photo pixel conversion'}</span>
                 </span>
               </div>
 
