@@ -346,7 +346,7 @@ export const FusionLab: React.FC<FusionLabProps> = ({ creatures, onFusionComplet
                 You need two Oddlings to fuse. Hatch another one in the Incubator first! 🥚
               </div>
             ) : (
-              <div className="flex flex-col md:flex-row items-center md:items-stretch justify-center gap-4">
+              <div className="fusion-family flex flex-col md:flex-row items-center md:items-stretch justify-center gap-4">
                 {pick('PARENT A', '#fbbf24', parentAId, setParentAId, parentBId, parentA)}
 
                 {/* The fusion chamber */}

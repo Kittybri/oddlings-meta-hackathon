@@ -543,7 +543,7 @@ export const IncubatorLab: React.FC<IncubatorLabProps> = ({
       </div>
 
       {/* Main Center Stage: Pixel-Art Incubator Machine */}
-      <div className="flex-1 flex flex-col items-center justify-center max-w-2xl w-full mx-auto my-auto py-2">
+      <div className="egg-stage flex-1 flex flex-col items-center justify-center max-w-2xl w-full mx-auto my-auto py-2">
         {/* The 16-Bit Pixel-Art Machine (Shared across empty, incubating, and hatch states) */}
         <IncubatorMachine
           activeEgg={activeEgg}

@@ -259,6 +259,8 @@ export const HabitatCanvas: React.FC<HabitatCanvasProps> = ({
   const interactionCooldowns = useRef<Record<string, { pond?: number; flower?: number; shelter?: number }>>({});
   const weatherTalkMemos = useRef<Record<string, TalkMemo>>({});
 
+  const [tray,setTray] = useState(false);
+  const [gardenMenu,setGardenMenu] = useState(false);
   // First Garden Adventure state
   const [advState, setAdvState] = useState<GardenAdventureState>(() => gardenAdventure.get());
   const [isAdventureModalOpen, setIsAdventureModalOpen] = useState(false);
@@ -456,7 +458,18 @@ export const HabitatCanvas: React.FC<HabitatCanvasProps> = ({
       const el = creatureEls.current[id];
       if (el && !el.dataset.held) el.style.left = s.xPct + '%';
       const label = labelEls.current[id];
-      if (label && !el?.dataset.held) label.style.left = s.xPct + '%';
+      if (label && !el?.dataset.held) {
+        label.style.left = s.xPct + '%';
+        const bubble = label.querySelector<HTMLElement>('.speech-balloon');
+        const camera = bubble && label.closest('.world-viewport');
+        if (bubble && camera) {
+          const bounds = camera.getBoundingClientRect();
+          const x = label.getBoundingClientRect().left;
+          const half = bubble.offsetWidth / 2;
+          bubble.style.left = (Math.min(bounds.right - half, Math.max(bounds.left + half, x)) - x) + 'px';
+          bubble.style.visibility = x < bounds.left || x > bounds.right ? 'hidden' : '';
+        }
+      }
       sig += id + ':' + Math.round(s.gridX) + ',' + Math.round(s.gridY) + ',' + s.mood + ',' + s.direction + ',' + (s.bubbleText || '') + ',' + s.isInWater + ',' + s.isInteracting + ';';
     }
     if (sig !== committedSig.current) {
@@ -1525,8 +1538,8 @@ export const HabitatCanvas: React.FC<HabitatCanvasProps> = ({
 
         {/* Greenhouse Garden Tasks & First Garden Adventure Widgets */}
         {!isEditMode && (
-          <div data-follow-view className="absolute top-3 right-3 z-30 flex flex-col items-end gap-2 pointer-events-auto">
-            {/* First Garden Adventure Trigger */}
+          <div data-follow-view data-garden-open={gardenMenu} className="absolute top-3 right-3 z-30 flex flex-col items-end gap-2 pointer-events-auto">
+            <button className="phone-control" aria-expanded={gardenMenu} onClick={() => setGardenMenu(!gardenMenu)}>🌱 Garden · {Number(!!gardenTasks.plantedSeed)+Number(!!gardenTasks.grownFlower)+Number(!!gardenTasks.oddlingEnjoyedPond)}/3</button>
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -1868,7 +1881,7 @@ export const HabitatCanvas: React.FC<HabitatCanvasProps> = ({
               {talking && (
                 <div
                   style={{ bottom: headPx + (tagged ? 20 : 0) }}
-                  className="absolute left-0 -translate-x-1/2 w-max max-w-[170px] whitespace-normal text-center leading-snug bg-slate-950/95 text-slate-100 text-[11px] font-mono font-bold px-2.5 py-1 rounded-md border border-pink-400 shadow-xl animate-bounce"
+                  onClick={() => setSimStates(prev => ({ ...prev, [creature.id]: { ...prev[creature.id], bubbleText: undefined } }))} className="speech-balloon pointer-events-auto absolute left-0 -translate-x-1/2 w-max max-w-[170px] whitespace-normal text-center leading-snug bg-slate-950/95 text-slate-100 text-[11px] font-mono font-bold px-2.5 py-1 rounded-md border border-pink-400 shadow-xl animate-bounce"
                 >
                   {sim.bubbleText}
                   <span aria-hidden className="absolute left-1/2 -bottom-[5px] -translate-x-1/2 w-2 h-2 rotate-45 bg-slate-950 border-r border-b border-pink-400" />
@@ -1890,14 +1903,15 @@ export const HabitatCanvas: React.FC<HabitatCanvasProps> = ({
 
       {/* Bottom Care & Interaction Dock (Active in Play Mode) */}
       {!isEditMode ? (
-        <div className="pixel-dock relative z-30 px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+        <div data-tray={tray} className="pixel-dock relative z-30 px-4 py-3 flex flex-wrap items-center justify-between gap-3">
           {adventureHint && (
             <div role="status" className="pixel-note w-full">
               🌱 Garden Adventure: {adventureHint}
             </div>
           )}
-          {/* Food Treat Selector */}
-          <div className="flex items-center gap-2">
+          <button className="phone-control" aria-expanded={tray} onClick={() => setTray(!tray)}>{tray ? "Close treats" : "🍬 Treats"}</button>
+          {selectedCreature && <strong className="phone-resident">{selectedCreature.name}</strong>}
+          <div className="food-picker flex items-center gap-2">
             <span className="pixel-label">
               🍬 TREATS
             </span>

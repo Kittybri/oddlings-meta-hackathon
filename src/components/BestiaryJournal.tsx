@@ -309,10 +309,10 @@ export const BestiaryJournal: React.FC<BestiaryJournalProps> = ({
                         </span>
                       )}
                     </div>
-                    <span className="text-xs font-semibold text-slate-200 mt-1 truncate max-w-full">
+                    <span className="text-xs font-semibold text-slate-200 mt-1 journal-label truncate max-w-full">
                       {activeInspect.sourceObject.name}
                     </span>
-                    <span className="text-[10px] font-mono text-slate-400 truncate max-w-full">
+                    <span className="text-[10px] font-mono text-slate-400 journal-label truncate max-w-full">
                       {activeInspect.sourceObject.material}
                     </span>
                   </div>
@@ -339,10 +339,10 @@ export const BestiaryJournal: React.FC<BestiaryJournalProps> = ({
                     <div className="w-20 h-20 flex items-center justify-center">
                       <OddlingAvatar creature={activeInspect} size={76} mood="happy" showAura={false} />
                     </div>
-                    <span className="text-xs font-bold text-slate-100 font-['Space_Grotesk'] truncate max-w-full">
+                    <span className="text-xs font-bold text-slate-100 font-['Space_Grotesk'] journal-label truncate max-w-full">
                       {activeInspect.name}
                     </span>
-                    <span className="text-[10px] font-mono text-cyan-300 italic truncate max-w-full">
+                    <span className="text-[10px] font-mono text-cyan-300 italic journal-label truncate max-w-full">
                       {activeInspect.speciesName}
                     </span>
                   </div>

@@ -294,3 +294,67 @@
  .pixel-dock .overflow-x-auto { padding-top:0;padding-bottom:0;scrollbar-width:none; }
  .pixel-dock .overflow-x-auto::-webkit-scrollbar { display:none; }
 }
+
+.phone-nav,.phone-control,.phone-resident { display:none }
+@media (max-width:639px), (max-height:450px) and (max-width:1024px) and (orientation:landscape) {
+ .oddlings-app header .phone-nav { display:flex;position:absolute;top:calc(100% + 5px);right:0;gap:4px }
+ .phone-nav button,.phone-control { background:#211b39;color:#fff1bd;border:2px solid #685780;padding:4px 7px;font: bold 13px monospace }
+ .phone-control,.phone-resident { display:inline-flex;align-items:center }
+ .phone-resident {font: bold 14px monospace;color:#fff1bd;overflow-wrap:anywhere}
+ .oddlings-app header .hud-tools { position:absolute;right:0;top:calc(100% + 50px);width:max-content;max-width:95vw;padding:5px;background:#141326;display:grid;border:2px solid #685780 }
+ .hud-tools button { justify-content:start }
+ .hud-tools button span.hidden { display:inline }
+ .hud-tools[data-phone-menu="Labs"] > button:not([aria-label]),.hud-tools[data-phone-menu="Menu"] > button[aria-label],.oddlings-app header .hud-tools[data-phone-menu=""] {display:none}
+ .hud-tools button[title^="Audio"]::after {content:"Sound"}
+ .biome-toolbar > div:first-child { padding-right:112px }
+ [data-garden-open="false"] > :not(.phone-control) { display:none }
+ .pixel-dock { justify-content:start;align-content:start;gap:5px }
+ .pixel-dock[data-tray="false"] :is(.food-picker,.treat-description,.ability-description,.pixel-home) {display:none}
+ .pixel-dock .food-picker .hidden {display:inline}
+ .pixel-dock [role="status"]:empty {display:none}
+ .pixel-dock .pixel-btn {font: bold 13px monospace;border-width:2px}
+ .pixel-dock > div:last-child > button {font:bold 13px monospace}
+ .speech-balloon {animation:none;cursor:pointer}
+ .fusion-family {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}
+ .fusion-family > div {min-width:0;padding:8px;overflow-wrap:anywhere}
+ .fusion-family > div:nth-child(2) {grid-row:2;grid-column:1/-1;justify-self:center}
+ .fusion-family .w-36 {width:88px;height:88px;overflow:hidden}
+ .fusion-family .w-36 > * {max-width:100%;max-height:100%}
+ .journal-label {white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow-wrap:anywhere;font-size:12px}
+ .egg-stage {justify-content:safe center;gap:4px}
+ .phone-dialog [role="dialog"] > :first-child {position:sticky;top:0;z-index:1;flex-shrink:0}
+ .phone-dialog [role="dialog"] {overscroll-behavior:contain}
+ .phone-dialog [role="dialog"] > .overflow-y-auto {min-height:0}
+ .phone-dialog img {max-height:25dvh}
+}
+@media(max-width:639px) {
+ .pixel-dock[data-tray="false"] {max-height:160px}
+ .biome-toolbar > div:first-child {padding-right:112px}
+}
+@media (max-height:450px) and (min-width:640px) and (max-width:1024px) and (orientation:landscape) {
+ .oddlings-app header .phone-nav {top:0}
+ .oddlings-app header .hud-tools {top:48px}
+}
+
+@media(max-width:639px) {
+ .biome-toolbar > div:first-child {padding-top:calc(var(--hud-h) + 2px)!important;padding-bottom:2px}
+ .biome-toolbar[data-editing=true] > div:first-child {padding-right:4px}
+ .biome-toolbar[data-editing=true] > div:first-child > div:last-child {width:100%;overflow-x:auto}
+ .phone-dialog[role=dialog] > div > div:first-child {position:sticky;top:0;z-index:1}
+ .phone-dialog .space-y-3 {font:14px/1.45 monospace}
+}
+@media(min-width:720px) and (max-width:1024px) and (max-height:450px) and (orientation:landscape) {
+ .biome-toolbar[data-editing=false] > div:first-child {padding:8px 110px 8px min(53vw,450px)!important}
+ .biome-toolbar[data-editing=false] > div:first-child > div:first-child {max-width:100%;overflow:auto}
+ .biome-toolbar[data-editing=false] > div:first-child > div:first-child > span {display:none}
+}
+@media (min-width:720px) and (max-width:1024px) and (max-height:450px) and (orientation:landscape) {
+ .biome-toolbar[data-editing=false] > div:first-child > div:first-child {flex-wrap:nowrap}
+ .biome-toolbar button .hidden,.biome-toolbar button .ml-1 {display:none}
+ .biome-toolbar button span.sm\:hidden {display:inline}
+}
+@media (max-width:639px), (max-height:450px) and (orientation:landscape) {
+ .oddlings-app .chat-overlay {top:var(--chat-top,0px);height:var(--chat-height,100dvh);bottom:auto}
+ .oddlings-app .chat-overlay > [role=dialog] {max-height:100%;overflow:hidden}
+ .chat-overlay form {flex-shrink:0}
+}

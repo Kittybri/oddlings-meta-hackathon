@@ -71,6 +71,15 @@ export const HUD: React.FC<HUDProps> = ({
   onOpenSaveRestore,
   onReturnTitle
 }) => {
+  const [menu, setMenu] = useState<"Labs" | "Menu" | null>(null);
+  useEffect(() => {
+    if (!menu) return;
+    const dismiss = (event: PointerEvent) => {
+      if (!(event.target instanceof Element) || !event.target.closest('.phone-nav,.hud-tools')) setMenu(null);
+    };
+    document.addEventListener('pointerdown', dismiss);
+    return () => document.removeEventListener('pointerdown', dismiss);
+  }, [menu]);
   const [now, setNow] = useState(Date.now());
 
   useEffect(() => {
@@ -166,7 +175,8 @@ export const HUD: React.FC<HUDProps> = ({
       </div>
 
       {/* Top Right: Core Action Clusters (Active Egg, Incubator, Fusion, Guide, Status, Sound) */}
-      <div className="pointer-events-auto flex flex-wrap items-center gap-1.5 sm:gap-2">
+      <div className="phone-nav pointer-events-auto">{(['Labs','Menu'] as const).map(label => <button key={label} aria-expanded={menu === label} onClick={() => setMenu(menu === label ? null : label)}>{label}</button>)}</div>
+      <div data-phone-menu={menu || ''} onClick={() => setMenu(null)} className="hud-tools pointer-events-auto flex flex-wrap items-center gap-1.5 sm:gap-2">
         {/* Active Egg Countdown Widget */}
         {activeEgg && (
           <button

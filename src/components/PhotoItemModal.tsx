@@ -269,7 +269,7 @@ export const PhotoItemModal: React.FC<PhotoItemModalProps> = ({ onClose, onSaved
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[90] flex items-center justify-center bg-black/70 p-4"
+      className="phone-dialog fixed inset-0 z-[90] flex items-center justify-center bg-black/70 p-4"
       role="dialog"
       aria-modal="true"
       aria-label="Make an item from a photo"

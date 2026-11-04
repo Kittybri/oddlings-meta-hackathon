@@ -113,8 +113,26 @@ export const CreatureChat: React.FC<CreatureChatProps> = ({ creature, mood, onCl
     }
   };
 
+  React.useEffect(() => {
+    const viewport = window.visualViewport;
+    if (!viewport) return;
+    const root = document.documentElement.style;
+    const resize = () => {
+      root.setProperty('--chat-height', viewport.height + 'px');
+      root.setProperty('--chat-top', viewport.offsetTop + 'px');
+    };
+    resize();
+    viewport.addEventListener('resize', resize);
+    viewport.addEventListener('scroll', resize);
+    return () => {
+      viewport.removeEventListener('resize', resize);
+      viewport.removeEventListener('scroll', resize);
+      root.removeProperty('--chat-height');
+      root.removeProperty('--chat-top');
+    };
+  }, []);
   return createPortal(
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" onClick={onClose}>
+    <div className="chat-overlay phone-dialog fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" onClick={onClose}>
       <div
         role="dialog"
         aria-label={'Talk to ' + creature.name}

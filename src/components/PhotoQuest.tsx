@@ -203,7 +203,7 @@ export const PhotoQuest: React.FC<PhotoQuestProps> = ({ creature, onClose, onUpd
   const done = loadBook()[creature.id]?.done || 0;
 
   return createPortal(
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" onClick={onClose}>
+    <div className="phone-dialog fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" onClick={onClose}>
       <div
         role="dialog"
         aria-label={creature.name + ' photo quest'}

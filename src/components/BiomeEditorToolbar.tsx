@@ -67,6 +67,10 @@ export const BiomeEditorToolbar: React.FC<BiomeEditorToolbarProps> = ({
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [pendingTemplate, setPendingTemplate] = useState<{ id: StarterTemplateId; label: string; desc: string; icon: string } | null>(null);
   const [isToolboxCollapsed, setIsToolboxCollapsed] = useState(() => typeof window !== 'undefined' && window.innerWidth < 640);
+  const pickTool = (tool: EditorTool) => {
+    onSelectTool(tool);
+    if (window.matchMedia("(max-width:639px), (max-height:450px) and (orientation:landscape)").matches) setIsToolboxCollapsed(true);
+  };
   const [showHelpModal, setShowHelpModal] = useState(false);
   const [showSaveToast, setShowSaveToast] = useState(false);
 
@@ -122,7 +126,7 @@ export const BiomeEditorToolbar: React.FC<BiomeEditorToolbarProps> = ({
   ];
 
   return (
-    <div className="biome-toolbar relative z-30 select-none">
+    <div data-editing={isEditMode} className="biome-toolbar relative z-30 select-none">
       {/* Top Habitat Switcher Bar + Mode Toggle */}
       <div
       className="flex flex-wrap items-center justify-between gap-2.5 px-4 pb-2 bg-gradient-to-b from-slate-950/95 via-slate-950/80 to-transparent"
@@ -294,6 +298,8 @@ export const BiomeEditorToolbar: React.FC<BiomeEditorToolbarProps> = ({
               <span>DONE</span>
             </button>
 
+            <button className="phone-control" aria-pressed={activeTool.type === 'grab'} onClick={() => pickTool({ type: 'grab' })}>Move</button>
+            {isToolboxCollapsed && <div id="decor-trash" title="Drag here to delete" className="phone-control decor-trash">🗑️</div>}
             {/* Collapse/Expand Toolbox on small screens */}
             <button
               onClick={() => {
@@ -303,7 +309,7 @@ export const BiomeEditorToolbar: React.FC<BiomeEditorToolbarProps> = ({
               className="px-2 py-1 rounded-md bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-200 text-xs font-mono border border-slate-800 cursor-pointer"
               title={isToolboxCollapsed ? 'Expand Toolbox' : 'Collapse Toolbox'}
             >
-              {isToolboxCollapsed ? '▾ Tools' : '▴ Hide'}
+              {isToolboxCollapsed ? '▾ ' + (activeTool.type === 'brush' ? activeTool.material : activeTool.type) : '▴ Hide'}
             </button>
           </div>
         )}
@@ -338,7 +344,7 @@ export const BiomeEditorToolbar: React.FC<BiomeEditorToolbarProps> = ({
                 onClick={() => {
                   sound.playClick();
                   setActiveTab('water');
-                  onSelectTool({ type: 'brush', material: 'water' });
+                  pickTool({ type: 'brush', material: 'water' });
                 }}
                 className={`px-3 py-1 rounded-lg text-xs font-mono font-bold transition-all ${
                   activeTab === 'water'
@@ -387,7 +393,7 @@ export const BiomeEditorToolbar: React.FC<BiomeEditorToolbarProps> = ({
               <button
                 onClick={() => {
                   sound.playClick();
-                  onSelectTool({ type: 'grab' });
+                  pickTool({ type: 'grab' });
                 }}
                 className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-mono font-bold border transition-all ${
                   activeTool.type === 'grab'
@@ -403,7 +409,7 @@ export const BiomeEditorToolbar: React.FC<BiomeEditorToolbarProps> = ({
               <button
                 onClick={() => {
                   sound.playClick();
-                  onSelectTool({ type: 'eraser' });
+                  pickTool({ type: 'eraser' });
                 }}
                 className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-mono font-bold border transition-all ${
                   activeTool.type === 'eraser'
@@ -447,6 +453,9 @@ export const BiomeEditorToolbar: React.FC<BiomeEditorToolbarProps> = ({
               </button>
             </div>
 
+
+          </div>
+
             {/* Trash: drag a placed item here and let go to delete it */}
             <div
               id="decor-trash"
@@ -456,8 +465,6 @@ export const BiomeEditorToolbar: React.FC<BiomeEditorToolbarProps> = ({
               <span className="decor-trash-can text-base" aria-hidden="true">🗑️</span>
               <span>Drag here to delete</span>
             </div>
-          </div>
-
           {/* Bottom row: Tab specific tools */}
           <div className="flex items-center gap-2 overflow-x-auto py-1">
             {activeTab === 'terrain' && (
@@ -470,7 +477,7 @@ export const BiomeEditorToolbar: React.FC<BiomeEditorToolbarProps> = ({
                       key={tm.material}
                       onClick={() => {
                         sound.playClick();
-                        onSelectTool({ type: 'brush', material: tm.material });
+                        pickTool({ type: 'brush', material: tm.material });
                       }}
                       className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-mono font-medium transition-all ${
                         isSelected
@@ -494,7 +501,7 @@ export const BiomeEditorToolbar: React.FC<BiomeEditorToolbarProps> = ({
                       key={tm.material}
                       onClick={() => {
                         sound.playClick();
-                        onSelectTool({ type: 'brush', material: tm.material });
+                        pickTool({ type: 'brush', material: tm.material });
                       }}
                       className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-mono font-medium transition-all ${
                         isSelected
@@ -515,7 +522,7 @@ export const BiomeEditorToolbar: React.FC<BiomeEditorToolbarProps> = ({
                 <button
                   onClick={() => {
                     sound.playClick();
-                    onSelectTool({ type: 'brush', material: 'water' });
+                    pickTool({ type: 'brush', material: 'water' });
                   }}
                   className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-mono font-bold transition-all ${
                     activeTool.type === 'brush' && activeTool.material === 'water'
@@ -541,7 +548,7 @@ export const BiomeEditorToolbar: React.FC<BiomeEditorToolbarProps> = ({
                       key={dec.type}
                       onClick={() => {
                         sound.playClick();
-                        onSelectTool({ type: 'decoration', decorType: dec.type });
+                        pickTool({ type: 'decoration', decorType: dec.type });
                       }}
                       className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-mono font-medium whitespace-nowrap transition-all ${
                         isSelected
@@ -570,7 +577,7 @@ export const BiomeEditorToolbar: React.FC<BiomeEditorToolbarProps> = ({
                       key={item.id}
                       onClick={() => {
                         sound.playClick();
-                        onSelectTool({ type: 'decoration', decorType: 'custom', customItemId: item.id });
+                        pickTool({ type: 'decoration', decorType: 'custom', customItemId: item.id });
                       }}
                       title={item.description || item.name}
                       className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-mono font-medium whitespace-nowrap transition-all ${
@@ -598,7 +605,7 @@ export const BiomeEditorToolbar: React.FC<BiomeEditorToolbarProps> = ({
                   <PhotoItemModal
                     onClose={() => setShowPhotoItem(false)}
                     onSaved={(item) => {
-                      onSelectTool({ type: 'decoration', decorType: 'custom', customItemId: item.id });
+                      pickTool({ type: 'decoration', decorType: 'custom', customItemId: item.id });
                       setShowPhotoItem(false);
                     }}
                   />
