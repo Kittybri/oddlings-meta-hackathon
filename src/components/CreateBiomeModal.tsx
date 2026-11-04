@@ -527,16 +527,6 @@ export const CreateBiomeModal: React.FC<CreateBiomeModalProps> = ({
             </div>
           )}
 
-          <div className="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800 text-xs text-slate-300 space-y-1">
-            <div className="flex items-center gap-1.5 font-semibold text-cyan-300">
-              <span>{detail === META_DETAIL ? '🌐 AI Backdrop Mode (Network Transmission)' : '🔒 Local Device Mode (100% Client-Side)'}</span>
-            </div>
-            <p className="text-slate-400">
-              {detail === META_DETAIL
-                ? 'Meta Muse Image transmits a compressed copy of your photo to the Meta AI server to redraw your scene into pixel game scenery (~30 seconds). Meta\'s own data policy applies to that copy.'
-                : 'Chunky, Classic, and Detailed downscale and quantize colors 100% locally on your device using Canvas. No photo data or image pixels are ever transmitted to any server.'}
-            </p>
-          </div>
           {/* Dual Previews: Photo & 16-Bit Pixel Art Output */}
           {pixelResult && originalPhotoUrl && !isProcessing && (
             <div className="space-y-3 pt-2 border-t border-slate-800">
