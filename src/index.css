@@ -1,0 +1,214 @@
+@import "tailwindcss";
+
+@keyframes cloudDriftSlow {
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-50%, 0, 0); }
+}
+
+@keyframes cloudDriftFast {
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-50%, 0, 0); }
+}
+
+.animate-cloud-drift-slow {
+  animation: cloudDriftSlow 160s linear infinite;
+  will-change: transform;
+}
+
+.animate-cloud-drift-fast {
+  animation: cloudDriftFast 100s linear infinite;
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-cloud-drift-slow,
+  .animate-cloud-drift-fast {
+    animation: none !important;
+  }
+}
+
+/* Dusk lighting inherits the same continuous clock as the single World sky. */
+.night-window {
+  opacity: var(--night-glow, 0);
+  filter: drop-shadow(0 0 3px #ffcb68) drop-shadow(0 0 7px #ffb952);
+  transition: opacity 1s linear;
+}
+.night-fire-halo { opacity: calc(var(--night-glow, 0) * .4); filter: blur(3px); transition: opacity 1s linear; }
+.night-lamp-halo {
+  position: absolute; inset: -25px -32px 0; border-radius: 50%;
+  background: radial-gradient(ellipse, #ffdb8b70, #ffbb4420 45%, transparent 70%);
+  opacity: var(--night-glow, 0); pointer-events: none; transition: opacity 1s linear;
+}
+@keyframes oddlings-fire { 0%, 100% { opacity: .85; } 50% { opacity: 1; } }
+@media (prefers-reduced-motion: no-preference) { .pixel-flame { animation: oddlings-fire 2.4s ease-in-out infinite; } }
+
+/* Lights at night and in the rain: a soft halo around the prop that slowly breathes in and out.
+   The halo's brightness follows the sky (--night-glow); the breathing is an opacity and scale animation on its
+   own layer, which the graphics card runs without repainting the world drawing. */
+.glow-halo {
+  position: absolute;
+  left: 50%;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  opacity: var(--night-glow, 0);
+  pointer-events: none;
+  transition: opacity 1s linear;
+}
+.glow-halo::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--glow) 60%, transparent) 0%, color-mix(in srgb, var(--glow) 25%, transparent) 32%, transparent 68%);
+  will-change: opacity, transform;
+  animation-delay: inherit;
+}
+@keyframes oddlings-halo-breathe {
+  0%, 100% { opacity: .65; transform: scale(.94); }
+  50% { opacity: 1; transform: scale(1.05); }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .glow-halo::before { animation: oddlings-halo-breathe 3.6s ease-in-out infinite; animation-delay: inherit; }
+}
+/* Pulsing water and moving creatures get their own layers so they never force a repaint of the world */
+[aria-label="Scrollable World"] .animate-pulse { will-change: opacity; }
+
+/* Ability and bloom effects in the habitat (pixel droplets, a glow ring, a sparkle burst) */
+.fx-drop {
+  position: absolute; bottom: 0; width: 3px; height: 5px; background: #7dd3fc; box-shadow: 0 0 0 1px #0369a1;
+  animation: oddlings-drop 0.9s ease-in both;
+}
+@keyframes oddlings-drop {
+  0% { transform: translateY(-44px); opacity: 0; }
+  20% { opacity: 1; }
+  85% { transform: translateY(-4px); opacity: 1; }
+  100% { transform: translateY(0) scaleY(0.3); opacity: 0; }
+}
+.fx-glow {
+  position: absolute; left: -26px; top: -60px; width: 52px; height: 52px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(253, 230, 138, 0.85) 0%, rgba(253, 230, 138, 0.25) 45%, transparent 70%);
+  animation: oddlings-glow-ring 1.4s ease-out both;
+}
+@keyframes oddlings-glow-ring {
+  0% { transform: scale(0.3); opacity: 0.95; }
+  100% { transform: scale(1.8); opacity: 0; }
+}
+.fx-spark {
+  position: absolute; left: -2px; top: -14px; width: 4px; height: 4px; background: #fde68a; box-shadow: 0 0 6px #f9a8d4;
+  animation: oddlings-spark 1.6s ease-out both;
+}
+@keyframes oddlings-spark {
+  0% { transform: translate(0, 0) scale(1.6); opacity: 1; }
+  100% { transform: translate(var(--dx), var(--dy)) scale(0.4); opacity: 0; }
+}
+/* Three dots that bounce while a creature is thinking of a reply */
+.thinking-dots span {
+  display: inline-block; width: 4px; height: 4px; margin: 0 2px; background: currentColor;
+  animation: oddlings-think 1s ease-in-out infinite;
+}
+.thinking-dots span:nth-child(2) { animation-delay: 0.15s; }
+.thinking-dots span:nth-child(3) { animation-delay: 0.3s; }
+@keyframes oddlings-think {
+  0%, 100% { transform: translateY(0); opacity: 0.4; }
+  50% { transform: translateY(-4px); opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fx-drop, .fx-glow, .fx-spark { animation-duration: 0.01s; }
+  .thinking-dots span { animation: none; }
+}
+
+/* Cute pixel care dock under the garden: chunky 8-bit buttons with notched corners */
+.pixel-dock {
+  font-family: "Pixelify Sans", ui-monospace, monospace;
+  background: #2b1b4d;
+  border-top: 3px solid #120a24;
+  box-shadow: inset 0 3px 0 #4a3480;
+  color: #fff6dc;
+}
+.pixel-label { font-size: 12px; font-weight: 700; letter-spacing: 0.06em; color: #ffd36b; white-space: nowrap; }
+.pixel-hint { font-size: 11px; line-height: 1.35; color: #bfe9ff; }
+.pixel-note {
+  font-size: 12px; padding: 4px 8px; margin: 3px; color: #1b3d16; background: #c9f2b4;
+  box-shadow: 0 -3px 0 #120a24, 0 3px 0 #120a24, -3px 0 0 #120a24, 3px 0 0 #120a24;
+}
+.pixel-btn {
+  --btn: #fff6dc;
+  display: inline-flex; align-items: center; gap: 6px;
+  margin: 3px; padding: 5px 11px;
+  font-family: inherit; font-size: 13px; font-weight: 700; line-height: 1.15;
+  color: #2b1b4d; background: var(--btn); border-radius: 0; cursor: pointer;
+  box-shadow:
+    inset -3px -3px 0 rgba(0, 0, 0, 0.2), inset 3px 3px 0 rgba(255, 255, 255, 0.55),
+    0 -3px 0 #120a24, 0 3px 0 #120a24, -3px 0 0 #120a24, 3px 0 0 #120a24, 0 6px 0 rgba(0, 0, 0, 0.4);
+  transition: transform 80ms steps(2, end), filter 80ms;
+}
+.pixel-btn:hover:not(:disabled) { transform: translateY(-1px); filter: brightness(1.07); }
+.pixel-btn:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow: inset 3px 3px 0 rgba(0, 0, 0, 0.18), 0 -3px 0 #120a24, 0 3px 0 #120a24, -3px 0 0 #120a24, 3px 0 0 #120a24;
+}
+.pixel-btn:disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(0.5); }
+.pixel-btn:focus-visible { outline: 3px dashed #ffd36b; outline-offset: 5px; }
+.pb-cream { --btn: #fff6dc; }
+.pb-gold { --btn: #ffd36b; }
+.pb-mint { --btn: #8fe07a; }
+.pb-pink { --btn: #ff9ecb; }
+.pb-lilac { --btn: #dcb8ff; }
+.pb-sky { --btn: #9fe8f2; }
+.pixel-treat { font-size: 12px; padding: 4px 9px; text-align: left; }
+.pixel-treat.is-picked { animation: oddlings-treat-hop 0.9s steps(2, end) infinite; }
+.pixel-taste {
+  display: inline-flex; align-items: center; justify-content: center; min-width: 16px; height: 16px;
+  font-size: 10px; background: rgba(43, 27, 77, 0.12); color: #2b1b4d;
+}
+.pixel-home { border-left: 3px dotted #6a54a8; }
+.pixel-select {
+  font-family: inherit; font-size: 12px; font-weight: 700; padding: 4px 6px; margin: 3px;
+  color: #2b1b4d; background: #fff6dc; border-radius: 0; cursor: pointer;
+  box-shadow: inset 3px 3px 0 rgba(0, 0, 0, 0.1), 0 -3px 0 #120a24, 0 3px 0 #120a24, -3px 0 0 #120a24, 3px 0 0 #120a24;
+}
+.pixel-select:focus-visible { outline: 3px dashed #ffd36b; outline-offset: 5px; }
+@keyframes oddlings-treat-hop { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+@media (prefers-reduced-motion: reduce) {
+  .pixel-treat.is-picked { animation: none; }
+  .pixel-btn { transition: none; }
+}
+
+/* Background waterfalls: bright pixel streaks step downward, only where the scenery's water falls */
+.bg-falls {
+  position: absolute; top: 0; bottom: 0; left: -0.078125%; right: -0.078125%; /* matches the scenery pieces' extra edge columns */ pointer-events: none;
+  background-image: repeating-linear-gradient(180deg, rgba(255, 255, 255, 0.75) 0 2px, rgba(255, 255, 255, 0) 2px 6px, rgba(170, 245, 255, 0.55) 6px 8px, rgba(255, 255, 255, 0) 8px 14px);
+  background-size: 100% 14px;
+  mask-size: 100% auto; mask-position: 50% 100%; mask-repeat: no-repeat;
+  -webkit-mask-size: 100% auto; -webkit-mask-position: 50% 100%; -webkit-mask-repeat: no-repeat;
+  animation: oddlings-falls 0.7s steps(7, end) infinite;
+  opacity: calc(1 - var(--night-dark, 0) * 0.85); /* the shimmer dims with the scenery at night */
+}
+@keyframes oddlings-falls { to { background-position: 0 14px; } }
+@media (prefers-reduced-motion: reduce) { .bg-falls { animation: none; } }
+
+/* The scenery's darkness glides between the once-a-second sky updates, fading with the sun instead of stepping */
+@property --night-dark { syntax: '<number>'; inherits: true; initial-value: 0; }
+.night-fade, .bg-falls { transition: --night-dark 4s linear; }
+
+/* Build mode trash: wakes up while an item is held, glows red when the item is over it */
+.decor-trash { transition: background-color 120ms, border-color 120ms, transform 120ms; }
+.decor-trash.trash-ready { border-color: rgb(244 63 94 / 0.9); background: rgb(76 5 25 / 0.45); }
+.decor-trash.trash-hot { border-style: solid; border-color: rgb(251 113 133); background: rgb(190 18 60 / 0.55); color: #fff; transform: scale(1.08); }
+.decor-trash.trash-hot .decor-trash-can { display: inline-block; transform: rotate(-12deg) scale(1.25); }
+
+/* Background trees sway: the leaves step a pixel left and right, faster and further when the wind picks up */
+.bg-leaves { background-size: 100% 100%; mask-size: 100% 100%; -webkit-mask-size: 100% 100%; image-rendering: pixelated;
+  animation: oddlings-leaf-sway calc(3.2s - var(--wind, 0.3) * 1.6s) steps(4, end) infinite; }
+@keyframes oddlings-leaf-sway { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(1px); } 50% { transform: translateX(calc(1px + var(--wind, 0.3) * 3px)); } 75% { transform: translateX(1px); } }
+@media (prefers-reduced-motion: reduce) { .bg-leaves { animation: none; } }
+
+/* Background trees: a gentle rock from the trunk base, livelier as the wind picks up */
+.bg-tree { image-rendering: pixelated; animation: oddlings-bg-tree calc(4s - var(--wind, 0.3) * 2s) ease-in-out infinite; }
+@keyframes oddlings-bg-tree { 0%, 100% { transform: rotate(calc(-0.6deg - var(--wind, 0.3) * 1.2deg)); } 50% { transform: rotate(calc(0.6deg + var(--wind, 0.3) * 1.8deg)); } }
+@media (prefers-reduced-motion: reduce) { .bg-tree { animation: none; } }
+
+/* Keep filtered scenery and swaying sprites on compositor layers. No paint
+   containment: trees and waterfalls may intentionally overflow their boxes. */
+.night-fade { will-change: filter; }
+.bg-tree, .bg-falls { will-change: transform; }

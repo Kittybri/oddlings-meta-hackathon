@@ -1,0 +1,10 @@
+{
+  "name": "ODDLINGS — Latest Pixel Sandbox",
+  "description": "Transform everyday objects into living creatures with personalities, habitats, abilities, and interactions. Discover, care for, and fuse species.",
+  "requestFramePermissions": [
+    "camera"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
