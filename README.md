@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://oddlings-meta.ai.studio/"><img src="docs/oddlings-banner.svg" alt="Oddlings — a cozy pixel sandbox" width="800"></a>
+  <a href="https://oddlings-meta.ai.studio/"><img src="docs/oddlings-day-night-banner.gif" alt="Oddlings — a cozy pixel sandbox" width="800"></a>
 </p>
 
 # Oddlings
