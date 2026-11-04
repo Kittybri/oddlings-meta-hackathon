@@ -4,7 +4,7 @@ Play: https://oddlings-meta.ai.studio/
 Source: https://github.com/Kittybri/oddlings-meta-hackathon
 License: Apache-2.0 (see LICENSE).
 
-Status: November 4 source reconciliation passes 150 tests, TypeScript and a production build with real media assets. The public game is deployed at the Play URL above. Final video and actual hackathon submission remain unverified.
+The November 4 release passed 151 tests, TypeScript, and the production build. The public health check and habitat load passed after redeployment. See the [README photo gallery](README.md#first-photo-check) for the first results from four creator photos and two artwork routes. Final video and submission status remain unverified.
 
 Participant guide: https://cerebralvalley.ai/e/meta-ai-developer-hackathon/details
 Submission form: https://cerebralvalley.ai/e/meta-ai-developer-hackathon/hackathon/submit

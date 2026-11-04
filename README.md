@@ -4,13 +4,21 @@
 
 # Oddlings
 
-**That coffee mug looks like it has a personality. Let’s hatch it and find out.**
+**Your camera is the character creator.** Photograph an object you know, hatch it as a pixel companion, and build a world it can live in. A tower fan became Halobreeze, a companion with an oval halo and a wind-themed ability.
 
-Photograph an everyday object, hatch a little pixel companion, and build it a home. Made for the Meta Global AI Developer Hackathon · Indie Developer track.
+**Meta Global AI Developer Hackathon 2026 · Indie Developer · Build for Your World**
 
-**[▶ Play Oddlings](https://oddlings-meta.ai.studio/)** · [How to play](#your-first-adventure) · [Meta AI](#where-meta-ai-comes-in) · [Run locally](#run) · [License](LICENSE)
+**[▶ Play Oddlings](https://oddlings-meta.ai.studio/)** · [Photo results](#first-photo-check) · [Meta integration](#where-meta-ai-comes-in) · [Run locally](#run) · [License](LICENSE)
+
+| [Indie track criterion](https://dev.meta.ai/events/global-hackathon) | What Oddlings delivers | Where to verify |
+| --- | --- | --- |
+| **Creativity** | Objects from your own space become companions you can care for, talk to, and bring into a habitat you build. Fusion gives two discoveries a shared descendant with recorded lineage. | [First photo check](#first-photo-check) · [Fusion Lab source](src/components/FusionLab.tsx) |
+| **Technical ambition** | Muse Spark Open turns a photo into structured creature traits. Muse Image draws the creature from the photo. Oddlings maps generated abilities to game effects, such as watering planted seeds or restoring energy. Fusion uses both models and both parents. | [Model roles](#where-meta-ai-comes-in) · [Server routes](server.ts) |
+| **Works in the game** | A live fan photo went through recognition, incubation, hatch, claim, and reload. The same evidence batch includes four creature results, an item drawing, and an AI backdrop. The tested source passed 151 automated tests, TypeScript, and the production build. | [Play the live build](https://oddlings-meta.ai.studio/) · [Photo evidence](#first-photo-check) · [Verified source](https://github.com/Kittybri/oddlings-meta-hackathon/tree/c26238aef3de071688aef5914fe9d4aaddbd120d) |
 
 ## Your first adventure
+
+**See a result right away.** Enter the habitat and choose **Create Biome → Sample landscape** to see a city photo beside the actual Muse Image backdrop the game generated. For a live model run, use **Incubator** with your own object photo.
 
 1. **📸 Snap.** Open the **Incubator** and upload or take a photo of an everyday object.
 2. **🥚 Hatch.** Give the egg 30 seconds, then crack it open and name your Oddling.
@@ -48,7 +56,7 @@ Four creator photos were picked before testing on November 4, 2026. Each went th
 
 | Photo and result | Recognition | What the run showed |
 | --- | --- | --- |
-| ![Tower fan and Halobreeze in the hatch screen](docs/photo-check/reflective.webp) | **Halobreeze**, bladeless tower fan/air purifier | Hatched and claimed with one Life Seed spent. Retry was unobserved in the UI. The art looked like the fan, but the published hatch card incorrectly said “fork.” The source includes a regression fix for that label. |
+| ![Tower fan and Halobreeze in the hatch screen](docs/photo-check/reflective.webp) | **Halobreeze**, bladeless tower fan/air purifier | Hatched and claimed with one Life Seed spent. The creature and balance persisted after reload. This run exposed an incorrect “fork” label. The fix is in the live build and has a regression test. |
 | ![Potted plant and Sagepuff artwork](docs/photo-check/plant.webp) | **Sagepuff**, faux potted plant | Automatic recognition retry ran once. The first artwork kept the leafy silhouette and pot. |
 | ![Round patterned cushion and Ploofina artwork](docs/photo-check/pattern.webp) | **Ploofina**, round tufted throw pillow | No recognition retry. The first artwork kept the radial pattern and added feet. |
 | ![Hooded plush and Hoodleplume artwork](docs/photo-check/clutter.webp) | **Hoodleplume**, hooded plush doll | No recognition retry. The first artwork kept the hood colors and trim, but dropped much of the face. |
@@ -209,7 +217,8 @@ Saves live in browser storage. The editor's embedded preview and the standalone 
 
 ## Verification
 
-- **Latest reconciliation, November 4, 2026 (Pacific): 150/150 tests passed, zero skipped; TypeScript and production build passed.** Claude's live weather/tree changes were preserved. Tests used an isolated server on port 3127 with provider keys blank. The fixed sample's after image was generated once through the deployed Meta biome-art route. Live phone checks covered the release confirmation without releasing a player's Oddling.
+- **November 4 release verification.** All 151 automated tests passed, along with the TypeScript check and production build. After republishing, the public health endpoint returned HTTP 200, the habitat opened with the saved Halobreeze, and the served code contained the fan classification fix and all four updated recovery messages.
+- Earlier on November 4, live phone checks covered the release confirmation. The fixed sample backdrop was generated through the deployed Muse Image biome route.
 - The November 4 build splits the main entry (~447 kB minified / 134 kB gzip) and HabitatCanvas (~459 kB / 235 kB gzip). The earlier bundle sizes and timing observations below are historical.
 
 - **Final local verification, November 3, 2026 (Pacific): 134/134 tests passed, zero skipped; TypeScript passed; production build passed with the actual image and audio files retrieved from the live preview.** API integration checks used an isolated server and blank provider keys. No paid inference was used by the automated checks. A refund test was corrected to use the wallet's local date rather than UTC; the 2,000-cent runtime budget was preserved. Explicit smaller budgets in synthetic limit tests are deliberate fixtures.
@@ -222,11 +231,11 @@ See [demo-script.md](demo-script.md) for the three-minute recording plan and [SU
 
 ## Assets and contributions
 
-Source files carry their existing Apache-2.0 notices. The project bundles scenery images and original synthesized music, alongside procedural pixel graphics and model-generated photo artwork. Preserve asset attribution and review the provenance of bundled scenery before publication; this audit does not certify rights to every image. Web fonts are requested from Google Fonts. The MediaPipe segmenter model is loaded from jsDelivr at runtime. Test apple photo: [Red apple on white background](https://commons.wikimedia.org/wiki/File:Red_apple_on_white_background.jpg), Sprinno, CC0. That photo is an optional test fixture, not required to run the game.
+Source files carry Apache-2.0 notices. The project bundles scenery, synthesized music, procedural pixel graphics, and model-generated photo artwork. Web fonts come from Google Fonts. The MediaPipe segmenter model loads from jsDelivr at runtime. The optional apple test photo is by Sprinno and uses CC0. [Red apple on white background](https://commons.wikimedia.org/wiki/File:Red_apple_on_white_background.jpg)
 
 Photos in `photo-to-oddling.png` (all from Wikimedia Commons): [Coffee Mug (Unsplash)](https://commons.wikimedia.org/w/index.php?curid=61714733), Ryan Holloway, CC0; [A wireless computer mouse](https://commons.wikimedia.org/w/index.php?curid=83718265), Pixloom, CC BY-SA 4.0; [knife and fork set on green cloth](https://commons.wikimedia.org/wiki/File:2022-10-27_knife_and_fork_set_on_green_cloth_(focus_stack_-_HiRes).jpg), Franz van Duns, CC BY-SA 4.0; [A Vans Sneaker On The Side](https://commons.wikimedia.org/w/index.php?curid=79804888), Joeltorresmejia78, CC BY-SA 4.0; [Houseplant Calathea orbifolia](https://commons.wikimedia.org/w/index.php?curid=104046541), Supsoph, CC BY-SA 4.0. The sheet is a derivative of these photos and is shared under the same licenses.
 
-Work was developed during the hackathon through Google AI Studio, Codex and Claude Code. Preserve repository history and identify event-built contributions in the submission; review any inherited code/asset rights before the final submission. This source export omits non-runtime verification PNGs from AI Studio's public folder.
+Kittybri built Oddlings from scratch during the hackathon with Google AI Studio, Codex, and Claude. The game's artwork was created for Oddlings with AI assistance. The November 4 photo gallery uses Kittybri's own photographs. The earlier Wikimedia test photos are credited above.
 
 
 ### Shared AI storage setup
