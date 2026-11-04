@@ -183,32 +183,31 @@ export const CreateBiomeModal: React.FC<CreateBiomeModalProps> = ({
     }
   };
 
-  const handleUseSamplePhoto = async () => {
+  const handleUseSamplePhoto = () => {
     sound.playClick();
     setErrorMessage(null);
-    const response = await fetch('/palm-city-original.webp');
-    if (!response.ok) {
-      setErrorMessage('The sample photo could not load. Please try again.');
-      return;
-    }
-    const blob = await response.blob();
-    const sampleDataUrl = await new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(String(reader.result));
-      reader.onerror = () => reject(new Error('The sample photo could not be read.'));
-      reader.readAsDataURL(blob);
-    });
-    setDetail(META_DETAIL);
     setBiomeName('Palm City Terrace');
-    setOriginalPhotoUrl(sampleDataUrl);
+    setOriginalPhotoUrl('/palm-city-original.webp');
   };
-
   const processPhotoSource = async (photoDataUrl: string) => {
     const request = ++requestId.current;
     setPixelResult(null);
     setOriginalPhotoUrl(photoDataUrl);
     setIsProcessing(true);
     setErrorMessage(null);
+
+    if (photoDataUrl === '/palm-city-original.webp') {
+      try {
+        const { background, thumb } = await toBackdrop('/palm-city-meta.png', 1);
+        if (request !== requestId.current) return;
+        setPixelResult({ backgroundDataUrl: background, thumbnailDataUrl: thumb, generationMode: 'ai_generated', width: 640, height: 360 });
+      } catch {
+        if (request === requestId.current) setErrorMessage('The sample images could not load. Please try again.');
+      } finally {
+        if (request === requestId.current) setIsProcessing(false);
+      }
+      return;
+    }
 
     if (detail === META_DETAIL) {
       // Meta Muse Image redraws the scene as pixel game scenery (about 30 seconds)
@@ -505,7 +504,7 @@ export const CreateBiomeModal: React.FC<CreateBiomeModalProps> = ({
             </div>
           )}
 
-          {originalPhotoUrl && <fieldset className="grid grid-cols-1 sm:grid-cols-2 gap-3 rounded-xl bg-slate-950 p-3">
+          {originalPhotoUrl && originalPhotoUrl !== '/palm-city-original.webp' && <fieldset className="grid grid-cols-1 sm:grid-cols-2 gap-3 rounded-xl bg-slate-950 p-3">
             <legend className="text-xs text-cyan-200 px-1">Tune your backdrop</legend>
             <label className="text-xs text-slate-300">Pixel detail
               <select aria-label="Pixel detail" value={detail} onChange={e => setDetail(Number(e.target.value))} className="block w-full bg-slate-800 p-2 rounded mt-1">
