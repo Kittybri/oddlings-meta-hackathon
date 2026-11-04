@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { startSharedJob, getSharedJob, reserveAi, aiRequestLease } from './spriteService';
-import { reserveShared } from './sharedAiStore';
+import { reserveShared, SHARED_BUSY } from './sharedAiStore';
 
 test('production rejects paid work without shared storage; shared results survive a new reader', async () => {
   const saved = {url:process.env.AI_REDIS_REST_URL,token:process.env.AI_REDIS_REST_TOKEN,mode:process.env.NODE_ENV};
@@ -28,7 +28,7 @@ test('production rejects paid work without shared storage; shared results surviv
       return new Response(JSON.stringify({result}),{status:200});
     };
     const releases=await Promise.all(Array.from({length:4},()=>reserveShared('text')));
-    await assert.rejects(reserveShared('text'));
+    await assert.rejects(reserveShared('text'), { message: SHARED_BUSY });
     assert.equal(used,4);
     releases.forEach(r=>r());
     await new Promise(r=>setTimeout(r,0));

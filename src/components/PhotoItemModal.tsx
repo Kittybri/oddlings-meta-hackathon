@@ -185,7 +185,7 @@ export const PhotoItemModal: React.FC<PhotoItemModalProps> = ({ onClose, onSaved
     setMuseGrid(parseSpriteGrid(data?.item?.sprite?.rows, data?.item?.sprite?.palette));
     setMuseArt(art);
     setChoice(art ? 'meta' : 'photo');
-    if (!art) setError('Meta could not draw this one right now, so it uses your photo for now. Tap ✨ Try again to ask Meta again.');
+    if (!art) setError('Meta couldn’t draw this item. No Craft Gem was spent. Try again or use your photo. Saving the item costs one gem.');
     setBusy('');
   };
 
@@ -199,7 +199,7 @@ export const PhotoItemModal: React.FC<PhotoItemModalProps> = ({ onClose, onSaved
       setMuseArt(art);
       setChoice('meta');
     } else {
-      setError('Meta could not redraw it this time. Try again in a moment.');
+      setError('Meta couldn’t redraw the item. Your current preview is still here. No Craft Gem was spent.');
     }
     setBusy('');
   };
@@ -226,9 +226,12 @@ export const PhotoItemModal: React.FC<PhotoItemModalProps> = ({ onClose, onSaved
     isSubmittingRef.current = true;
     const item = makeItem(clean, sprite, byMeta ? 'muse-spark' : 'local', museArt && choice === 'meta' ? 'muse-image-1.0 + ' + MODEL : MODEL);
     if (!customItemLibrary.add(item)) {
-      walletBook.refundGem();
+      const refunded = walletBook.refundGem();
       isSubmittingRef.current = false;
-      setError('Your item library reached capacity (12/12 items). Your ' + GEM_NAME + ' ' + GEM_ICON + ' was refunded. Remove an item to save a new one.');
+      const reason = customItemLibrary.isAtCapacity()
+        ? 'Your item library is full. Remove an unused item and try again.'
+        : 'The item couldn’t be saved. Free device space and try again.';
+      setError(reason + (refunded ? ' Your Craft Gem was refunded.' : ' The Craft Gem refund couldn’t be saved.'));
       return;
     }
     isSubmittingRef.current = false;

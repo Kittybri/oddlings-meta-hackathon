@@ -159,7 +159,7 @@ export const FusionLab: React.FC<FusionLabProps> = ({ creatures, onFusionComplet
     if (pending && !pending.result) {
       const restored = walletBook.refundFusion(pending.id);
       setSparkles(walletBook.get().sparkles);
-      setErrorMessage(restored ? 'Your interrupted fusion was refunded. You can try again.' : 'Free device space and reopen Fusion to restore your Sparkles.');
+      setErrorMessage(restored ? 'Fusion was interrupted. Your ' + pending.cost + ' Sparkles were refunded. You can try again.' : 'Free device space and reopen Fusion to restore your Sparkles.');
     }
   }, []);
   const cachedStatus = getCachedBasetenStatus();
@@ -238,7 +238,7 @@ export const FusionLab: React.FC<FusionLabProps> = ({ creatures, onFusionComplet
       // Players get a friendly note; the technical reason stays in the console for debugging
       console.warn('Fusion failed:', err?.message || err);
       if (!refunded) { setErrorMessage('Could not restore Sparkles. Free device space and reopen Fusion to retry recovery.'); return; }
-      setErrorMessage('Oopsie! The fusion fizzled ' + '💫' + ' ' + parentA.name + ' and ' + parentB.name + ' got a little shy and didn\'t quite mix. Your ' + SPARKLE_ICON + ' ' + FUSION_SPARKLES + ' Sparkles hopped right back into your pocket, so give it another try!');
+      setErrorMessage('Fusion couldn’t finish. Your ' + FUSION_SPARKLES + ' Sparkles were refunded. Try again when you’re ready.');
     }
   };
 

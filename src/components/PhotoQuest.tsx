@@ -155,13 +155,6 @@ export const PhotoQuest: React.FC<PhotoQuestProps> = ({ creature, onClose, onUpd
       return;
     }
     const reservedDay = walletBook.get().checksDay;
-    let refunded = false;
-    const safeRefundCheck = () => {
-      if (!refunded) {
-        refunded = true;
-        walletBook.refundCheck(reservedDay);
-      }
-    };
     try {
       // Shared pre-upload compressor ~1280px JPEG; decode failure throws ImageDecodeError without provider call
       const { dataUrl: image } = await preparePhotoForUpload(file, { maxDimension: 1280, quality: 0.85 });
@@ -191,9 +184,11 @@ export const PhotoQuest: React.FC<PhotoQuestProps> = ({ creature, onClose, onUpd
         });
       }
       // Note: legitimate model rejection (out.match === false) is NOT an error, so no refund is issued.
-    } catch (err: any) {
-      safeRefundCheck();
-      setError(err?.message || 'Could not check the photo.');
+    } catch {
+      const refunded = walletBook.refundCheck(reservedDay);
+      setError(refunded
+        ? 'We couldn’t finish this photo quest. You didn’t lose a daily photo check. Try again.'
+        : 'We couldn’t finish this photo quest or restore the daily photo check. Free device space before trying again.');
     } finally {
       setChecking(false);
       if (fileRef.current) fileRef.current.value = '';

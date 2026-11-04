@@ -474,7 +474,9 @@ export const IncubatorLab: React.FC<IncubatorLabProps> = ({
       setIsAnalyzing(false);
       isSubmittingRef.current = false;
       sound.playBounce();
-      const message = refunded ? 'Your creature couldn’t hatch yet. Your seed was returned. Try again.' : 'Your creature couldn’t hatch yet. Free device space and reopen the incubator to recover your seed.';
+      const message = refunded
+        ? 'We couldn’t make an egg from this photo. Your Life Seed is back. Try again when you’re ready.'
+        : 'We couldn’t make an egg. Free device space and reopen the incubator to recover your Life Seed.';
       setAnalysisError(message);
     }
   };

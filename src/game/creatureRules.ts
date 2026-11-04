@@ -161,8 +161,8 @@ export function detectUtensilOrToolType(
     return 'computer_mouse';
   }
 
-  // 1. Fork: Latin Furca, prongs, tines, four-prong, pierce, spear
-  if (/fork|tine|prong|furca|pierc|spear/i.test(text)) {
+  // 1. Fork: require a specific identity or tine cue. Ability prose can mention piercing any obstacle.
+  if (/\b(?:forks?|furca|tines?)\b|\bfour[-\s]+prongs?\b/i.test(text)) {
     return 'fork';
   }
 
@@ -171,8 +171,8 @@ export function detectUtensilOrToolType(
     return 'spoon';
   }
 
-  // 3. Knife: blade, cleaver, cutter, cullter, shear, slice, carve
-  if (/knife|blade|cleaver|cutter|culter|slice|carv/i.test(text)) {
+  // 3. Knife: word boundaries keep blade-based terms from matching “bladeless”.
+  if (/\b(?:knife|knives|blades?|cleavers?|cutters?|culter)\b/i.test(text)) {
     return 'knife';
   }
 

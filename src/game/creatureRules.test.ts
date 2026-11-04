@@ -520,6 +520,11 @@ test('scale bounding box together without collapsing blocks to edge', () => {
   assert.equal(gap, 2, 'Relative spacing between blocks must be preserved, not clamped independently');
 });
 
+test('a bladeless fan with piercing wind and routine language is neither a fork nor a knife', () => {
+  assert.equal(detectUtensilOrToolType('Bladeless Tower Fan Air Purifier. Pierces stale air during its cleaning routine.'), null);
+  assert.equal(detectUtensilOrToolType('Dinner utensil with four prongs'), 'fork');
+});
+
 test('detectUtensilOrToolType correctly identifies computer mouse and does NOT confuse scroll wheel with heel', () => {
   // Test mouse cues
   const mouseText = 'Wired Computer Mouse Matte ABS Plastic Clicker Whiskers Mus Electricus Domesticus Wired Wanderer Scroll Surge two buttons dark central scroll wheel black cable';

@@ -34,6 +34,32 @@ The game generated this backdrop through its Meta biome-art route. The sample us
 - **Muse Image** draws creatures, hybrid artwork, placeable photo items, and photo biome scenery.
 - **Oddlings** handles the game rules. It turns generated traits into abilities, keeps track of saves, and manages the world you build.
 
+### How the art is made
+
+| In the game | What makes it |
+| --- | --- |
+| **Muse Image artwork** | Meta draws creatures, items, fusions, and AI biomes from supplied images. Oddlings prepares the result for the game. |
+| **Photo-based fallback** | Oddlings traces the source photo into a pixel sprite when creature artwork is unavailable. Photo items also offer the player's photo as a separate option. |
+| **Local biome conversion** | The browser pixelates the photo on the device. The AI scenery option sends a compressed photo to Muse Image. |
+
+### First photo check
+
+Four creator photos were picked before testing on November 4, 2026. Each went through recognition once, including its built-in retry if triggered. The fan hatched in the browser. The other three used the game's recognition client and live artwork routes. Each pair shows the source photo on the left.
+
+| Photo and result | Recognition | What the run showed |
+| --- | --- | --- |
+| ![Tower fan and Halobreeze in the hatch screen](docs/photo-check/reflective.webp) | **Halobreeze**, bladeless tower fan/air purifier | Hatched and claimed with one Life Seed spent. Retry was unobserved in the UI. The art looked like the fan, but the published hatch card incorrectly said “fork.” The source includes a regression fix for that label. |
+| ![Potted plant and Sagepuff artwork](docs/photo-check/plant.webp) | **Sagepuff**, faux potted plant | Automatic recognition retry ran once. The first artwork kept the leafy silhouette and pot. |
+| ![Round patterned cushion and Ploofina artwork](docs/photo-check/pattern.webp) | **Ploofina**, round tufted throw pillow | No recognition retry. The first artwork kept the radial pattern and added feet. |
+| ![Hooded plush and Hoodleplume artwork](docs/photo-check/clutter.webp) | **Hoodleplume**, hooded plush doll | No recognition retry. The first artwork kept the hood colors and trim, but dropped much of the face. |
+
+| More from the same check | First result |
+| --- | --- |
+| **Photo item** · round patterned cushion | ![Source cushion and Muse Image item drawing](docs/photo-check/pattern-item.webp) The item artwork route returned a drawing with the radial pattern. |
+| **AI biome** · city and palms | ![Source city photo and Muse Image pixel backdrop](docs/photo-check/city-biome.webp) The biome route returned a pixel scene with the palm trees and building silhouettes. |
+
+The item and biome rows show first server drawings. The browser's item silhouette check and in-game placement are separate steps. Source thumbnails are resized copies of the creator's photos without embedded camera metadata.
+
 <details>
 <summary><strong>🎮 Gameplay notes and release details</strong></summary>
 
@@ -80,14 +106,11 @@ Slow model calls run as background jobs: the POST route returns a `jobId` and th
 - **Creature banter.** About every 75 seconds, two residents of the same world have a 4-line speech-bubble exchange. Their materials decide whether they act as friends (for example Ceramic with Thermal), playful rivals (for example Glass with Thermal) or new neighbors. Both creatures remember the chat.
 - **Photo quests.** The QUEST button shows a request such as "something round" or "a plant or a flower". The player takes or uploads a photo; Muse Spark checks it and replies in character. A match gives one friendship heart, 15 energy and a memory.
 
-### Honest boundaries
+### Art pipeline details
 
-- **SAM is not integrated.** Object cut-out for the traced sprite uses Google's MediaPipe Interactive Segmenter in the browser (a non-Meta tool), with local color rules as a fallback.
-- **Muse Image has been checked on five real photos** (see [Evidence](#evidence-real-photos-to-oddlings)), not on a large set. Results vary from run to run; the five shown are the first and only run, not picked from several.
-- The traced photo sprite is local canvas processing (segmentation, hand removal, palette quantization). Muse Spark only suggests colors and the face position; it does not draw it.
-- Custom uploaded biome backgrounds have two distinct modes: local canvas conversion stays on-device; AI scenery sends a compressed photo through the server to Muse Image. Local conversion is never labeled Meta generation.
-- Starter/manual creatures and local fallback sprites remain distinct from live Meta results. The current Fusion Lab uses live Muse Spark trait synthesis followed by Muse Image artwork; local fallback must not be presented as a successful live fusion.
-- Model replies are sometimes unusable. The app validates every reply, retries banter once, and shows a clear message instead of inventing results.
+- The traced sprite uses Google's MediaPipe Interactive Segmenter and local canvas processing for cut-out, hand removal, and palette reduction. Muse Spark can suggest colors and face position. The segmentation path uses MediaPipe in place of SAM.
+- Live fusion requires both Muse Spark trait synthesis and Muse Image artwork. Starter creatures and locally traced sprites have separate provenance.
+- The app validates model replies and retries eligible failures. The two small evidence batches show individual outcomes. Image quality varies across photos and runs.
 
 ### Spending limits and interrupted jobs
 
@@ -97,6 +120,8 @@ Slow model calls run as background jobs: the POST route returns a `jobId` and th
 - Production uses shared Redis REST storage for atomic daily reservations, concurrency leases, and background job results. Configure AI_REDIS_REST_URL and AI_REDIS_REST_TOKEN before deploying. Missing or unavailable shared storage blocks paid work. Local development retains the file-backed test backend.
 - Missing/expired background jobs return a terminal retry message. Pollers stop; fusion refunds its 20 Sparkles on failure, unsuccessful egg analysis refunds its seed, and failed quest checks refund their reservation. Photo items spend a gem when saving an item, so a lost drawing alone has no gem charge to undo. Successful local fallback items still cost their normal gem if saved.
 - Banter is throttled, waits before reusing a pair, and pauses when relevant windows or tab visibility prevent it.
+
+The automated suite simulates four occupied slots, a fifth request receiving the busy result, and a missing job returning a terminal error. Wallet tests verify one-time refunds and quest check rollover independently of live providers.
 
 ## Evidence: real photos to Oddlings
 
