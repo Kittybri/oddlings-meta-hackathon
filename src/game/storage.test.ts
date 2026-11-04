@@ -6,7 +6,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { 
-  sanitizeCreature, 
+  sanitizeCreature,
+  loadCreaturesFromStorage,
+  saveCreaturesToStorage, 
   computeFirstRunGoals, 
   loadOnboardingActions,
   sanitizeEgg,
@@ -1368,6 +1370,23 @@ test('applySaveBundle idempotently migrates desk layout and adventure target to 
     assert.ok(adventureRaw);
     const savedAdv = JSON.parse(adventureRaw!);
     assert.equal(savedAdv.biomeId, 'greenhouse');
+  } finally {
+    (globalThis as any).window = originalWindow;
+  }
+});
+
+test('released creatures stay absent after reload, including the final Oddling', () => {
+  const originalWindow = (globalThis as any).window;
+  const data = new Map<string, string>();
+  (globalThis as any).window = { localStorage: {
+    getItem: (key: string) => data.get(key) ?? null,
+    setItem: (key: string, value: string) => data.set(key, value)
+  } };
+  try {
+    assert.equal(saveCreaturesToStorage(INITIAL_ODDLINGS.slice(1)), true);
+    assert.equal(loadCreaturesFromStorage().some(c => c.id === INITIAL_ODDLINGS[0].id), false);
+    assert.equal(saveCreaturesToStorage([]), true);
+    assert.deepEqual(loadCreaturesFromStorage(), []);
   } finally {
     (globalThis as any).window = originalWindow;
   }

@@ -83,6 +83,7 @@ interface BestiaryJournalProps {
   onSelectCreature: (creature: CreatureDNA) => void;
   onUpdateCreature?: (updated: CreatureDNA) => void;
   onOpenSaveRestore?: () => void;
+  onReleaseCreature: (id: string) => boolean;
   onClose: () => void;
 }
 
@@ -91,6 +92,7 @@ export const BestiaryJournal: React.FC<BestiaryJournalProps> = ({
   onSelectCreature,
   onUpdateCreature,
   onOpenSaveRestore,
+  onReleaseCreature,
   onClose
 }) => {
   const [selectedFilter, setSelectedFilter] = useState<string>('ALL');
@@ -98,6 +100,8 @@ export const BestiaryJournal: React.FC<BestiaryJournalProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [diaryOpen, setDiaryOpen] = useState(false);
   const [memoriesOpen, setMemoriesOpen] = useState(false);
+  const [releaseId, setReleaseId] = useState<string | null>(null);
+  const [releaseError, setReleaseError] = useState('');
 
   const activeInspect = creatures.find((c) => c.id === inspectCreatureId) || creatures[0];
   const activeVisualPlan = repairObjectVisualPlan(activeInspect?.appearance.visualPlan, activeInspect?.sourceObject.name || '');
@@ -494,6 +498,30 @@ export const BestiaryJournal: React.FC<BestiaryJournalProps> = ({
                       </option>
                     ))}
                   </select>
+                )}
+              </div>
+
+              <div className="rounded-lg border border-rose-800/60 p-3">
+                {releaseId === activeInspect.id ? (
+                  <div role="alertdialog" aria-label={'Release ' + activeInspect.name} className="space-y-3">
+                    <p className="text-sm text-rose-200">Release {activeInspect.name}? This removes this Oddling and its memories from your collection and habitat. This cannot be undone in the game.</p>
+                    <div className="flex flex-wrap gap-2">
+                      <button autoFocus onClick={() => setReleaseId(null)} className="min-h-11 px-3 bg-slate-700 rounded-lg">Keep Oddling</button>
+                      <button onClick={() => {
+                        if (onReleaseCreature(activeInspect.id)) {
+                          setReleaseId(null);
+                          setDiaryOpen(false);
+                          setMemoriesOpen(false);
+                          setReleaseError('');
+                        } else {
+                          setReleaseError('Could not save the release. Your Oddling is still here. Please try again.');
+                        }
+                      }} className="min-h-11 px-3 bg-rose-800 text-white rounded-lg">Release {activeInspect.name}</button>
+                    </div>
+                    {releaseError && <p role="alert" className="text-sm text-rose-200">{releaseError}</p>}
+                  </div>
+                ) : (
+                  <button onClick={() => { setReleaseId(activeInspect.id); setReleaseError(''); }} className="min-h-11 px-3 text-rose-300 text-xs font-bold">Release Oddling</button>
                 )}
               </div>
 

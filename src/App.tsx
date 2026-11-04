@@ -373,6 +373,12 @@ export default function App() {
                 return true;
               }}
               onUpdateCreature={handleUpdateCreature}
+              onReleaseCreature={(id) => {
+                const remaining = creatures.filter(creature => creature.id !== id);
+                if (!saveCreaturesToStorage(remaining)) return false;
+                setCreatures(remaining);
+                return true;
+              }}
               onOpenSaveRestore={() => setShowSaveRestoreModal(true)}
               onClose={closeTool}
             />

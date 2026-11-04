@@ -292,10 +292,11 @@ export function loadCreaturesFromStorage(): CreatureDNA[] {
     if (!raw) return INITIAL_ODDLINGS;
 
     const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed) || parsed.length === 0) {
+    if (!Array.isArray(parsed)) {
       return INITIAL_ODDLINGS;
     }
 
+    if (parsed.length === 0) return [];
     const sanitized = parsed
       .map(sanitizeCreature)
       .filter((c): c is CreatureDNA => c !== null);
