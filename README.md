@@ -1,12 +1,42 @@
+<p align="center">
+  <a href="https://oddlings-meta.ai.studio/"><img src="docs/oddlings-banner.svg" alt="Oddlings — a cozy pixel sandbox" width="800"></a>
+</p>
+
 # Oddlings
 
-Play: https://oddlings-meta.ai.studio/
-Source: https://github.com/Kittybri/oddlings-meta-hackathon
-License: Apache-2.0 (see LICENSE).
+**That coffee mug looks like it has a personality. Let’s hatch it and find out.**
 
-Photograph an everyday object, incubate its egg, and welcome a pixel creature into a world you can build. Talk to your creatures, watch them chat with each other, send them on photo quests, and fuse them into hybrids with traceable inherited traits.
+Photograph an everyday object, hatch a little pixel companion, and build it a home. Made for the Meta Global AI Developer Hackathon · Indie Developer track.
 
-## Current gameplay and judging build
+**[▶ Play Oddlings](https://oddlings-meta.ai.studio/)** · [How to play](#your-first-adventure) · [Meta AI](#where-meta-ai-comes-in) · [Run locally](#run) · [License](LICENSE)
+
+## Your first adventure
+
+1. **📸 Snap.** Open the **Incubator** and upload or take a photo of an everyday object.
+2. **🥚 Hatch.** Give the egg 30 seconds, then crack it open and name your Oddling.
+3. **💗 Care.** Give it a treat, play, or chat. Try its special ability and take on a photo quest.
+4. **🧬 Fuse.** Combine two Oddlings in the **Fusion Lab**. The parents stay with you, and the **Collection** records the hybrid’s lineage.
+5. **🧱 Build.** Paint terrain and place decorations in **Build / Edit Biome**. Try **Create Biome → Sample landscape** to see what a real photo looks like as game scenery.
+
+> ✨ **Starter pouch:** 500 Sparkles, 10 Life Seeds, and 5 Craft Gems in a fresh save. Finish all four **First-Run Goals** to claim another **50 Sparkles** once.
+
+## From city photo to pixel world
+
+| 📷 Original photo | ✨ Muse Image backdrop |
+| --- | --- |
+| ![City buildings and palm trees in the original photograph](public/palm-city-original.webp) | ![Pixel-art redraw of the same city and palm trees](public/palm-city-meta.png) |
+
+The game generated this backdrop through its Meta biome-art route. The sample uses the saved pair, so you can see the result as soon as the images load.
+
+## Where Meta AI comes in
+
+- **Muse Spark Open** reads your photo and designs the Oddling’s traits. It also powers conversations, photo quest checks, and fusion traits.
+- **Muse Image** draws creatures, hybrid artwork, placeable photo items, and photo biome scenery.
+- **Oddlings** handles the game rules. It turns generated traits into abilities, keeps track of saves, and manages the world you build.
+
+<details>
+<summary><strong>🎮 Gameplay notes and release details</strong></summary>
+
 
 - Fresh playthroughs start with **500 Sparkles**, 10 Life Seeds and 5 Craft Gems. Existing valid wallet balances are preserved.
 - Finish the four first-run goals (discover two photographed objects, care, fuse, and save a built home) to unlock **Claim 50 Sparkles**. The wallet records a receipt to prevent repeat claims.
@@ -17,7 +47,11 @@ Photograph an everyday object, incubate its egg, and welcome a pixel creature in
 - Photo-item artwork receives a local silhouette check after background removal. Empty, nearly solid-background or heavily fragmented cutouts and failed image requests get **one automatic retry** with the same photo and “Refining your item…” feedback. Capacity, billing and credential errors are not retried. This is a structural check, not an AI assessment of beauty or object resemblance. A saved item costs one Craft Gem; an unsuccessful drawing alone spends none.
 - Creature recognition validates structured output and retries malformed results once. The browser analysis deadline is now **140 seconds**. Player resource reservations and applicable failure refunds remain in place.
 
-## Meta integration
+</details>
+
+<details>
+<summary><strong>🧪 Model routes, limits, and judging evidence</strong></summary>
+
 
 Oddlings uses the Muse Spark Open and Muse Image model families through three provider integrations. Every call goes through the app's own server; no API key belongs in client code or a `VITE_` variable.
 
@@ -68,7 +102,7 @@ Slow model calls run as background jobs: the POST route returns a `jobId` and th
 
 Five real photos from Wikimedia Commons (not drawings), run through the same two live Meta steps the incubator uses on November 3, 2026. The artwork shown is the first generated artwork for each photo; no art was edited or re-rolled. One recognition request needed the retry described below.
 
-![Five real photos beside the Oddlings Meta made from them](photo-to-oddling.png)
+The table records the five source photos and their generated Oddlings. Photo credits are listed below.
 
 | Photo | Muse Spark recognized | Creature | Muse Spark time | Muse Image time |
 |---|---|---|---:|---:|
@@ -106,6 +140,8 @@ Faults were forced in the live incubator by replacing the browser's network call
 
 That historical 90-second timeout case was checked in code, not waited out live. The current analysis deadline is 140 seconds. Eggs use absolute timestamps, so a refresh never restarts incubation.
 
+</details>
+
 ## Run
 
 Use a Node version supported by the pinned Vite dependency. Install dependencies with `npm install` (or `pnpm install`). Copy `.env.example` to `.env` and set the keys you have:
@@ -131,6 +167,9 @@ npm run build
 ```
 
 Integration tests use `ODDLINGS_TEST_URL` when set, otherwise port 3000. Use unset keys for automated tests so no paid inference is requested. In production, build first, set `NODE_ENV=production`, provide the keys as server environment secrets, and run `npm start`. Host the Express server, not only the static `dist` folder; the browser needs its server API routes.
+
+<details>
+<summary><strong>📚 Full controls, verification, and credits</strong></summary>
 
 ## Play
 
@@ -177,3 +216,5 @@ Create a persistent Upstash Redis database with eviction disabled and a size/RES
 Production rejects paid AI requests while shared storage is unconfigured or unavailable. Daily amounts remain conservative per-request reservations, not a measurement of provider billing. Configure provider billing controls separately. Concurrency leases expire after ten minutes to recover crashed workers; provider requests have shorter abort deadlines. Completed job results are shared across instances and retained for ten minutes. An interrupted worker leaves an expiring pending record so clients can retry/refund.
 
 Validate the configured store from two running instances before republishing: reserve four concurrent jobs across them, confirm the fifth is busy, poll a job through the other instance, and restart one instance to confirm daily reservations persist. Automated tests use an HTTP storage double; production credentials and a live database are still required for this deployment check.
+
+</details>
