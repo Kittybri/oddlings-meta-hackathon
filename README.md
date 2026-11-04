@@ -49,7 +49,7 @@ Slow model calls run as background jobs: the POST route returns a `jobId` and th
 - Current runtime default: **2,000 cents ($20) per UTC day in estimated reservations**, configurable with `AI_DAILY_BUDGET_CENTS`; this is not measured provider billing. Each image request reserves 10 cents and each text/vision request 5 cents, including failed attempts conservatively. Daily counts also cap image requests at 100 and text/vision requests at 500. The older lifetime image counter remains in `meta-usage.json`.
 - `AI_MAX_CONCURRENT` defaults to **4**. Background work retains its slot until it settles, rather than releasing it as soon as a job ID is returned. Over-limit requests receive a friendly retryable HTTP 429.
 - Existing per-player limits remain: Fireworks 40 requests/10 minutes, creature and fusion artwork 10/hour each, biome artwork 6/hour. Baseten also retains its existing shared limiter. Cloud Run's one trusted proxy hop supplies `req.ip`; the app no longer selects a caller-controlled leftmost forwarding value.
-- Daily reservations use `ai-daily-usage.json` and in-memory concurrency. This is shared within one server instance, not a hard cross-instance or fresh-container spending guarantee. A production multi-instance deployment needs shared durable accounting and provider-side billing controls.
+- Production uses shared Redis REST storage for atomic daily reservations, concurrency leases, and background job results. Configure AI_REDIS_REST_URL and AI_REDIS_REST_TOKEN before deploying. Missing or unavailable shared storage blocks paid work. Local development retains the file-backed test backend.
 - Missing/expired background jobs return a terminal retry message. Pollers stop; fusion refunds its 20 Sparkles on failure, unsuccessful egg analysis refunds its seed, and failed quest checks refund their reservation. Photo items spend a gem when saving an item, so a lost drawing alone has no gem charge to undo. Successful local fallback items still cost their normal gem if saved.
 - Banter is throttled, waits before reusing a pair, and pauses when relevant windows or tab visibility prevent it.
 
@@ -149,3 +149,17 @@ Source files carry their existing Apache-2.0 notices. The project bundles scener
 Photos in `photo-to-oddling.png` (all from Wikimedia Commons): [Coffee Mug (Unsplash)](https://commons.wikimedia.org/w/index.php?curid=61714733), Ryan Holloway, CC0; [A wireless computer mouse](https://commons.wikimedia.org/w/index.php?curid=83718265), Pixloom, CC BY-SA 4.0; [knife and fork set on green cloth](https://commons.wikimedia.org/wiki/File:2022-10-27_knife_and_fork_set_on_green_cloth_(focus_stack_-_HiRes).jpg), Franz van Duns, CC BY-SA 4.0; [A Vans Sneaker On The Side](https://commons.wikimedia.org/w/index.php?curid=79804888), Joeltorresmejia78, CC BY-SA 4.0; [Houseplant Calathea orbifolia](https://commons.wikimedia.org/w/index.php?curid=104046541), Supsoph, CC BY-SA 4.0. The sheet is a derivative of these photos and is shared under the same licenses.
 
 Work was developed during the hackathon through Google AI Studio, Codex and Claude Code. Preserve repository history and identify event-built contributions in the submission; review any inherited code/asset rights before the final submission. This source export omits non-runtime verification PNGs from AI Studio's public folder.
+
+
+### Shared AI storage setup
+
+Create a persistent Upstash Redis database with eviction disabled and a size/REST request limit that accommodates generated images. Use its HTTPS REST endpoint and read/write REST token as server-only secrets:
+
+- `AI_REDIS_REST_URL`
+- `AI_REDIS_REST_TOKEN`
+- `AI_STORAGE_NAMESPACE=oddlings-production` (use the same value on every instance)
+- `AI_DAILY_BUDGET_CENTS=2000` and `AI_MAX_CONCURRENT=4` retain the existing limits.
+
+Production rejects paid AI requests while shared storage is unconfigured or unavailable. Daily amounts remain conservative per-request reservations, not a measurement of provider billing. Configure provider billing controls separately. Concurrency leases expire after ten minutes to recover crashed workers; provider requests have shorter abort deadlines. Completed job results are shared across instances and retained for ten minutes. An interrupted worker leaves an expiring pending record so clients can retry/refund.
+
+Validate the configured store from two running instances before republishing: reserve four concurrent jobs across them, confirm the fifth is busy, poll a job through the other instance, and restart one instance to confirm daily reservations persist. Automated tests use an HTTP storage double; production credentials and a live database are still required for this deployment check.

@@ -47,7 +47,7 @@ export const SparkleShop: React.FC<SparkleShopProps> = ({ onClose }) => {
       sound.playChirp(880);
       setMessage('Thank you! You got ' + name + ' ' + SPARKLE_ICON);
     } else {
-      setMessage(out.reason === 'too-poor' ? 'Not enough ' + SPARKLE_NAME + 's yet!' : 'You already have plenty of that!');
+      setMessage(out.reason === 'storage' ? 'Could not save the purchase. Free device space and try again.' : out.reason === 'too-poor' ? 'Not enough ' + SPARKLE_NAME + 's yet!' : 'You already have plenty of that!');
     }
   };
 

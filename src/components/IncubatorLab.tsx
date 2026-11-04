@@ -17,7 +17,7 @@ import { loadActiveEggFromStorage } from '../game/storage';
 
 interface IncubatorLabProps {
   activeEgg: IncubatorEgg | null;
-  onEggCreated: (egg: IncubatorEgg) => void;
+  onEggCreated: (egg: IncubatorEgg) => boolean;
   onEggClaimed: (egg: IncubatorEgg) => { success: boolean; error?: string } | void;
   onClose: () => void;
 }
@@ -167,11 +167,11 @@ export const IncubatorLab: React.FC<IncubatorLabProps> = ({
     let pending: { at: number } | null = null;
     try { pending = JSON.parse(localStorage.getItem(PENDING_EGG_KEY) || 'null'); } catch { pending = null; }
     if (!pending) return;
-    try { localStorage.removeItem(PENDING_EGG_KEY); } catch { /* storage unavailable */ }
-    if (activeEgg && activeEgg.createdAt >= pending.at) return; // the egg was made just before the interruption
-    walletBook.refundSeed();
+    if (activeEgg && activeEgg.createdAt >= pending.at) { clearPendingEgg(); return; } // the egg was made just before the interruption
+    if (!walletBook.refundSeed()) { setAnalysisError("Free device space and reopen the incubator to recover your seed."); return; }
     let photo: string | null = null;
     try { photo = sessionStorage.getItem(PENDING_PHOTO_KEY); sessionStorage.removeItem(PENDING_PHOTO_KEY); } catch { photo = null; }
+    clearPendingEgg();
     if (photo && !activeEgg) setPhotoPreviewUrl(photo);
     setAnalysisError('Your last photo was interrupted before its egg was made. Your ' + SEED_NAME + ' is back' + (photo && !activeEgg ? ': tap the button to try again.' : '.'));
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -454,7 +454,7 @@ export const IncubatorLab: React.FC<IncubatorLabProps> = ({
         isClaimed: false
       };
 
-      onEggCreated(newEgg);
+      if (!onEggCreated(newEgg)) throw new Error("Could not save the egg. Free device space and try again.");
       clearPendingEgg();
       setPhotoPreviewUrl(null);
       setIsAnalyzing(false);
@@ -463,8 +463,7 @@ export const IncubatorLab: React.FC<IncubatorLabProps> = ({
     } catch (err: any) {
       if (jobId !== analysisJobSeq.current) return;
       // Refund reserved Life Seed on failure and retain photo preview for user retry
-      walletBook.refundSeed();
-      clearPendingEgg();
+      if (walletBook.refundSeed()) clearPendingEgg();
       setIsAnalyzing(false);
       isSubmittingRef.current = false;
       sound.playBounce();

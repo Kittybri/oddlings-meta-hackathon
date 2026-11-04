@@ -244,8 +244,9 @@ export default function App() {
 
   // Egg created in Incubator
   const handleEggCreated = (newEgg: IncubatorEgg) => {
+    if (!saveActiveEggToStorage(newEgg)) return false;
     setActiveEgg(newEgg);
-    saveActiveEggToStorage(newEgg);
+    return true;
   };
 
   // Egg claimed from Incubator (with exactly-once deduplicated guarantee)
@@ -349,9 +350,12 @@ export default function App() {
             <FusionLab
               creatures={creatures}
               onFusionComplete={(hybrid) => {
-                handleCreatureDiscovered(hybrid);
+                const next = creatures.some(c => c.id === hybrid.id) ? creatures : [hybrid, ...creatures];
+                if (!saveCreaturesToStorage(next)) return false;
+                setCreatures(next);
                 setOnboardingActions((prev) => (prev.hasFused ? prev : { ...prev, hasFused: true }));
                 setMode('habitat');
+                return true;
               }}
               onClose={closeTool}
             />
@@ -366,6 +370,7 @@ export default function App() {
                   setHabitatTheme(normalizeHome(creature.biomeId));
                 }
                 setMode('habitat');
+                return true;
               }}
               onUpdateCreature={handleUpdateCreature}
               onOpenSaveRestore={() => setShowSaveRestoreModal(true)}

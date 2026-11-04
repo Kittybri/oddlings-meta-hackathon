@@ -1,3 +1,5 @@
+import { sharedConfigured, reserveShared, redisCommand, sharedJobKey } from './sharedAiStore';
+import { randomUUID } from 'node:crypto';
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -229,7 +231,6 @@ export async function reviewSpriteWithMuseSpark(input: SpriteReviewInput): Promi
       body: JSON.stringify(payload),
       signal: controller.signal
     });
-    clearTimeout(timeoutId);
     if (!res.ok) {
       const errText = await res.text();
       if (res.status === 401) throw { status: 401, message: 'Invalid or expired BASETEN_API_KEY.' };
@@ -259,10 +260,11 @@ export async function reviewSpriteWithMuseSpark(input: SpriteReviewInput): Promi
     if (!review) throw { status: 502, message: 'Meta Muse Spark Open returned no usable sprite review.' };
     return review;
   } catch (err: any) {
-    clearTimeout(timeoutId);
     if (err.name === 'AbortError') throw { status: 504, message: 'Sprite review timed out.' };
     if (err.status) throw err;
     throw { status: 500, message: err.message || 'Sprite review failed on Baseten.' };
+  } finally {
+    clearTimeout(timeoutId);
   }
 }
 
@@ -371,7 +373,6 @@ export async function drawCreatureWithMuseImage(params: { imageUrl: string; obje
       }),
       signal: controller.signal
     });
-    clearTimeout(timeoutId);
     if (!res.ok) {
       const errText = await res.text();
       if (res.status === 401) throw { status: 401, message: 'Invalid or expired META_API_KEY.' };
@@ -383,9 +384,56 @@ export async function drawCreatureWithMuseImage(params: { imageUrl: string; obje
     if (!image) throw { status: 502, message: 'Muse Image returned no image.' };
     return { image };
   } catch (err: any) {
-    clearTimeout(timeoutId);
     if (err.name === 'AbortError') throw { status: 504, message: 'Muse Image request timed out.' };
     if (err.status) throw err;
     throw { status: 500, message: err.message || 'Muse Image request failed.' };
+  } finally {
+    clearTimeout(timeoutId);
   }
+}
+
+
+export async function reserveAi(kind: 'image' | 'text'): Promise<() => void> {
+  if (sharedConfigured()) return reserveShared(kind);
+  if (process.env.NODE_ENV === 'production') throw new Error(AI_BUSY_MESSAGE);
+  return aiUsageGate.reserve(kind);
+}
+
+export async function startSharedJob<T>(run: () => Promise<T>): Promise<string> {
+  if (!sharedConfigured()) {
+    if (process.env.NODE_ENV === 'production') throw new Error(AI_BUSY_MESSAGE);
+    return startJob(run);
+  }
+  const id = randomUUID();
+  const at = Date.now();
+  await redisCommand('SET', sharedJobKey(id), JSON.stringify({ status: 'pending', at }), 'EX', 600);
+  const lease = aiRequestLease.getStore();
+  if (lease) lease.background = true;
+  void (async () => {
+    let job: Job<T>;
+    try { job = { status: 'done', at, result: await run() }; }
+    catch (err: any) { job = { status: 'error', at, error: err?.message || 'Request failed.' }; }
+    try {
+      await redisCommand('SET', sharedJobKey(id), JSON.stringify(job), 'EX', 600);
+    } catch {
+      // The pending record remains and expires. Never publish success before it is durable.
+      console.warn('Could not persist an AI job result.');
+    } finally { lease?.release(); }
+  })();
+  return id;
+}
+
+export async function getSharedJob(id: string): Promise<Job<unknown>> {
+  if (!sharedConfigured()) {
+    if (process.env.NODE_ENV === 'production') throw new Error(AI_BUSY_MESSAGE);
+    return getJob(id);
+  }
+  const raw = await redisCommand('GET', sharedJobKey(id));
+  if (!raw) return { status: 'error', at: Date.now(), error: LOST_JOB_MESSAGE };
+  const job = JSON.parse(raw) as Job<unknown>;
+  return Date.now() - job.at > JOB_TTL_MS
+    ? { status: 'error', at: Date.now(), error: LOST_JOB_MESSAGE } : job;
+}
+export function startSharedSpriteReview(input: SpriteReviewInput): Promise<string> {
+  return startSharedJob(() => reviewSpriteWithMuseSpark(input));
 }

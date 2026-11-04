@@ -1,3 +1,4 @@
+import { pendingTransfer, recoverWorldTransfer } from './worldRegions';
 import { normalizeHome, isWorldRegionId } from './worldRegions';
 /**
  * @license
@@ -824,6 +825,8 @@ export function createSaveBundle(options?: {
     }
   }
 
+  for (const world of pendingTransfer() || []) biomeWorlds[world.biome] = world;
+
   // Load adventure state
   const gardenAdventureState: GardenAdventureState = options?.gardenAdventure || gardenAdventure.get();
   // Load wallet
@@ -1105,6 +1108,7 @@ export function isGameOwnedWorldRegionKey(key: string): boolean {
  * Takes a pre-restore snapshot first. If quota limit is hit, cleanly rolls back to previous game state.
  */
 export function applySaveBundle(bundle: OddlingsSaveBundleV1): { success: true } | { success: false; error: string } {
+  try { recoverWorldTransfer(); } catch { return { success: false, error: 'Free storage space to finish the pending world transfer before restoring a save.' }; }
   if (typeof window === 'undefined' || !window.localStorage) {
     return { success: false, error: 'Local storage is not supported in this environment.' };
   }

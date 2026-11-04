@@ -461,7 +461,6 @@ Never output raw SVG, HTML, or executable code. Respond with ONLY a raw JSON obj
       signal: controller.signal
     });
 
-    clearTimeout(timeoutId);
 
     if (!res.ok) {
       const errText = await res.text();
@@ -518,12 +517,13 @@ Never output raw SVG, HTML, or executable code. Respond with ONLY a raw JSON obj
 
     return validated;
   } catch (err: any) {
-    clearTimeout(timeoutId);
     if (err.name === 'AbortError') {
       throw { status: 504, message: 'Request to Meta Muse Spark on Baseten timed out after 35 seconds.' };
     }
     if (err.status) throw err;
     throw { status: 500, message: err.message || 'Failed to communicate with Baseten inference API.' };
+  } finally {
+    clearTimeout(timeoutId);
   }
 }
 
@@ -658,7 +658,6 @@ Never output raw SVG or code. Respond with ONLY a raw JSON object conforming to 
       signal: controller.signal
     });
 
-    clearTimeout(timeoutId);
 
     if (!res.ok) {
       const errText = await res.text();
@@ -696,11 +695,12 @@ Never output raw SVG or code. Respond with ONLY a raw JSON object conforming to 
     lastLiveVerificationTimestamp = Date.now();
     return validateAndSanitizeMuseOutput(parsed, `${params.parentA.name} x ${params.parentB.name}`);
   } catch (err: any) {
-    clearTimeout(timeoutId);
     if (err.name === 'AbortError') {
       throw { status: 504, message: 'Live fusion request timed out.' };
     }
     if (err.status) throw err;
     throw { status: 500, message: err.message || 'Failed live fusion on Baseten.' };
+  } finally {
+    clearTimeout(timeoutId);
   }
 }

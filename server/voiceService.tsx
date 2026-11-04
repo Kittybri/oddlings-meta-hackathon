@@ -193,7 +193,6 @@ export async function generateCreatureVoice(input: VoiceInput): Promise<VoiceOut
       body: JSON.stringify(payload),
       signal: controller.signal
     });
-    clearTimeout(timeoutId);
 
     if (!res.ok) {
       const errText = await res.text();
@@ -227,9 +226,10 @@ export async function generateCreatureVoice(input: VoiceInput): Promise<VoiceOut
     }
     return out;
   } catch (err: any) {
-    clearTimeout(timeoutId);
     if (err.name === 'AbortError') throw { status: 504, message: 'Voice request timed out.' };
     if (err.status) throw err;
     throw { status: 500, message: err.message || 'Voice request failed on Baseten.' };
+  } finally {
+    clearTimeout(timeoutId);
   }
 }

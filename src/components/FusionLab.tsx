@@ -17,7 +17,7 @@ const SPARKLE_NAME = 'Sparkles';
 
 interface FusionLabProps {
   creatures: CreatureDNA[];
-  onFusionComplete: (hybrid: CreatureDNA) => void;
+  onFusionComplete: (hybrid: CreatureDNA) => boolean;
   onClose: () => void;
 }
 
@@ -150,10 +150,18 @@ function makeHybrid(result: any, parentA: CreatureDNA, parentB: CreatureDNA, pre
 export const FusionLab: React.FC<FusionLabProps> = ({ creatures, onFusionComplete, onClose }) => {
   const [parentAId, setParentAId] = useState<string>(creatures[0]?.id || '');
   const [parentBId, setParentBId] = useState<string>(creatures.length > 1 ? creatures[1]?.id : creatures[0]?.id || '');
-  const [step, setStep] = useState<Step>('idle');
+  const [step, setStep] = useState<Step>(() => walletBook.get().fusion?.result ? 'done' : 'idle');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [hybrid, setHybrid] = useState<CreatureDNA | null>(null);
+  const [hybrid, setHybrid] = useState<CreatureDNA | null>(() => walletBook.get().fusion?.result || null);
   const [sparkles, setSparkles] = useState(() => walletBook.get().sparkles);
+  useEffect(() => {
+    const pending = walletBook.get().fusion;
+    if (pending && !pending.result) {
+      const restored = walletBook.refundFusion(pending.id);
+      setSparkles(walletBook.get().sparkles);
+      setErrorMessage(restored ? 'Your interrupted fusion was refunded. You can try again.' : 'Free device space and reopen Fusion to restore your Sparkles.');
+    }
+  }, []);
   const cachedStatus = getCachedBasetenStatus();
   const [basetenStatus, setBasetenStatus] = useState<BasetenStatus | null>(cachedStatus);
   const [isChecking, setIsChecking] = useState<boolean>(!cachedStatus);
@@ -198,7 +206,8 @@ export const FusionLab: React.FC<FusionLabProps> = ({ creatures, onFusionComplet
   const handleFuse = async () => {
     if (busy || !canFuse || !parentA || !parentB) return;
     setErrorMessage(null);
-    if (!walletBook.spendSparkles(FUSION_SPARKLES)) {
+    const reservation = walletBook.beginFusion(FUSION_SPARKLES);
+    if (!reservation) {
       setErrorMessage('Fusing costs ' + FUSION_SPARKLES + ' ' + SPARKLE_NAME + '. Care for your creatures and finish photo quests to earn more ' + SPARKLE_ICON);
       return;
     }
@@ -217,16 +226,18 @@ export const FusionLab: React.FC<FusionLabProps> = ({ creatures, onFusionComplet
       if (!art) throw new Error('Muse Image could not draw ' + made.name + ' this time.');
       made.sourceObject = { ...made.sourceObject, spritePhotoUrl: art, userPhotoUrl: art };
       made.provenanceDetails = { ...made.provenanceDetails, sourceDescription: 'Fused by Meta: Muse Spark mixed the traits of ' + parentA.name + ' and ' + parentB.name + ', Muse Image drew the hybrid from both' } as any;
+      if (!walletBook.finishFusion(reservation, made)) throw new Error("Could not save fusion result.");
       setHybrid(made);
       setStep('done');
       sound.playFanfare();
     } catch (err: any) {
-      walletBook.refundSparkles(FUSION_SPARKLES);
+      const refunded = walletBook.refundFusion(reservation);
       setSparkles(walletBook.get().sparkles);
       setStep('idle');
       sound.playBounce();
       // Players get a friendly note; the technical reason stays in the console for debugging
       console.warn('Fusion failed:', err?.message || err);
+      if (!refunded) { setErrorMessage('Could not restore Sparkles. Free device space and reopen Fusion to retry recovery.'); return; }
       setErrorMessage('Oopsie! The fusion fizzled ' + '💫' + ' ' + parentA.name + ' and ' + parentB.name + ' got a little shy and didn\'t quite mix. Your ' + SPARKLE_ICON + ' ' + FUSION_SPARKLES + ' Sparkles hopped right back into your pocket, so give it another try!');
     }
   };
@@ -270,6 +281,7 @@ export const FusionLab: React.FC<FusionLabProps> = ({ creatures, onFusionComplet
       </div>
 
       <div className="relative max-w-5xl mx-auto p-4 md:p-6 flex flex-col gap-5">
+        {step === "done" && errorMessage && <p role="alert" className="text-pink-200">{errorMessage}</p>}
         {/* Header */}
         <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3" style={frame('#2a1850', '#ff8fc7')}>
           <div className="flex items-center gap-3">
@@ -332,7 +344,11 @@ export const FusionLab: React.FC<FusionLabProps> = ({ creatures, onFusionComplet
               <div className="text-[10px] text-slate-400 mt-3">Traits by Meta Muse Spark · drawn by Meta Muse Image from both parents</div>
             </div>
             <button
-              onClick={() => onFusionComplete(hybrid)}
+              onClick={() => {
+                if (!onFusionComplete(hybrid)) { setErrorMessage('Could not save your creature. Free device space and try again.'); return; }
+                const pending = walletBook.get().fusion;
+                if (pending) walletBook.claimFusion(pending.id);
+              }}
               className="px-6 py-3 text-base text-slate-900"
               style={{ ...PIXEL_FONT, ...frame('#fde047', '#fff7ae') }}
             >

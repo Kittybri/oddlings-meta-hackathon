@@ -15,12 +15,16 @@ import {
 } from './server/basetenService';
 import { generateCreatureVoice, sanitizeVoiceInput } from './server/voiceService';
 import { generateItemFromPhoto } from './server/itemService';
-import { buildBiomeArtPrompt, buildFusionArtPrompt, buildItemArtPrompt, drawCreatureWithMuseImage, getJob, metaModelApiKey, sanitizeSpriteReview, startJob, startSpriteReview, aiUsageGate, aiRequestLease, AI_BUSY_MESSAGE } from './server/spriteService';
+import { buildBiomeArtPrompt, buildFusionArtPrompt, buildItemArtPrompt, drawCreatureWithMuseImage, getSharedJob as getJob, metaModelApiKey, sanitizeSpriteReview, startSharedJob as startJob, startSharedSpriteReview as startSpriteReview, reserveAi, aiRequestLease, AI_BUSY_MESSAGE } from './server/spriteService';
 import { normalizeImageUrl } from './server/itemService';
 import fs from 'node:fs';
 import { banterBetweenCreatures, chatWithCreature, checkQuestPhoto, sanitizeBanterInput, sanitizeChatInput, sanitizeQuestInput, suggestCreatureName, FIREWORKS_MUSE_SPARK_MODEL } from './server/chatService';
 
 dotenv.config();
+
+const asyncRoute = (handler: (req: Request, res: Response) => Promise<unknown>) =>
+  (req: Request, res: Response, next: express.NextFunction) => { void handler(req, res).catch(next); };
+
 
 const app = express();
 // Cloud Run appends the actual visitor address as the closest forwarded hop.
@@ -56,10 +60,10 @@ app.use('/api/meta/fusion-art', perPlayerLimit('fusion-art', 10, 60 * 60_000));
 app.use('/api/meta/biome-art', perPlayerLimit('biome-art', 6, 60 * 60_000));
 
 // Reserve before any model work. Failed attempts remain reserved conservatively.
-app.use('/api', (req: Request, res: Response, next: () => void) => {
+app.use('/api', async (req: Request, res: Response, next: () => void) => {
   if (req.method !== 'POST' || !/^\/(baseten|fireworks|meta)\//.test(req.path)) return next();
   try {
-    const release = aiUsageGate.reserve(req.path.startsWith('/meta/') ? 'image' : 'text');
+    const release = await reserveAi(req.path.startsWith('/meta/') ? 'image' : 'text');
     const lease = { release, background: false };
     res.once('finish', () => { if (!lease.background) release(); });
     const sendJson = res.json.bind(res);
@@ -204,17 +208,17 @@ app.post('/api/baseten/item', async (req: Request, res: Response) => {
 // Muse Spark reviews a creature sprite traced from the player's photo. The review runs
 // in the background and the client checks on it, since it can take longer than the
 // hosting proxy lets one request wait.
-app.post('/api/baseten/sprite', (req: Request, res: Response) => {
+app.post('/api/baseten/sprite', asyncRoute(async (req: Request, res: Response) => {
   const input = sanitizeSpriteReview(req.body);
   if (!input) {
     res.status(400).json({ error: 'Invalid sprite review request.' });
     return;
   }
-  res.json({ success: true, jobId: startSpriteReview(input) });
-});
+  res.json({ success: true, jobId: await startSpriteReview(input) });
+}));
 
-app.get('/api/baseten/sprite/:id', (req: Request, res: Response) => {
-  const job = getJob(String(req.params.id));
+app.get('/api/baseten/sprite/:id', asyncRoute(async (req: Request, res: Response) => {
+  const job = await getJob(String(req.params.id));
   if (!job) {
     res.status(404).json({ error: 'Unknown sprite review.' });
     return;
@@ -225,7 +229,7 @@ app.get('/api/baseten/sprite/:id', (req: Request, res: Response) => {
     error: job.error,
     provenance: { provider: 'baseten', model: 'meta-models/muse-spark-open-1026', isLive: true, timestamp: Date.now() }
   });
-});
+}));
 
 // Meta Muse Image draws the creature's art from the player's photo (Meta Model API).
 // Runs as a background job the client checks on, like the sprite review.
@@ -249,7 +253,7 @@ function countMuseImage(): void {
   }
 }
 
-app.post('/api/meta/creature-art', (req: Request, res: Response) => {
+app.post('/api/meta/creature-art', asyncRoute(async (req: Request, res: Response) => {
   if (!metaModelApiKey()) {
     res.status(503).json({ error: 'META_API_KEY is not configured in server environment.' });
     return;
@@ -268,11 +272,11 @@ app.post('/api/meta/creature-art', (req: Request, res: Response) => {
   countMuseImage();
   // kind 'item' draws a placeable photo item instead of a creature
   const prompt = req.body?.kind === 'item' ? buildItemArtPrompt(objectName, colors) : undefined;
-  res.json({ success: true, jobId: startJob(() => drawCreatureWithMuseImage({ imageUrl, objectName, colors, prompt })) });
-});
+  res.json({ success: true, jobId: await startJob(() => drawCreatureWithMuseImage({ imageUrl, objectName, colors, prompt })) });
+}));
 
 // Fusion Lab: Muse Image draws the hybrid from both parents' pictures (counts toward the same drawing cap)
-app.post('/api/meta/fusion-art', (req: Request, res: Response) => {
+app.post('/api/meta/fusion-art', asyncRoute(async (req: Request, res: Response) => {
   if (!metaModelApiKey()) {
     res.status(503).json({ error: 'META_API_KEY is not configured in server environment.' });
     return;
@@ -291,17 +295,17 @@ app.post('/api/meta/fusion-art', (req: Request, res: Response) => {
   const traits = Array.isArray(req.body?.traits) ? req.body.traits.filter((x: unknown) => typeof x === 'string') : [];
   countMuseImage();
   const prompt = buildFusionArtPrompt(str(req.body?.nameA), str(req.body?.nameB), str(req.body?.hybridName), traits);
-  res.json({ success: true, jobId: startJob(() => drawCreatureWithMuseImage({ imageUrl: imageA, extraImageUrls: [imageB], objectName: str(req.body?.hybridName), prompt })) });
-});
+  res.json({ success: true, jobId: await startJob(() => drawCreatureWithMuseImage({ imageUrl: imageA, extraImageUrls: [imageB], objectName: str(req.body?.hybridName), prompt })) });
+}));
 
-app.get('/api/meta/fusion-art/:id', (req: Request, res: Response) => {
-  const job = getJob(String(req.params.id));
+app.get('/api/meta/fusion-art/:id', asyncRoute(async (req: Request, res: Response) => {
+  const job = await getJob(String(req.params.id));
   if (!job) {
     res.status(404).json({ error: 'Unknown fusion art request.' });
     return;
   }
   res.json({ status: job.status, result: job.result, error: job.error, provenance: { provider: 'meta', model: 'muse-image-1.0', isLive: true, timestamp: Date.now() } });
-});
+}));
 
 // Which Meta model keys are set (true/false only, never the keys), for the title screen
 app.get('/api/meta/status', (_req: Request, res: Response) => {
@@ -313,7 +317,7 @@ app.get('/api/meta/status', (_req: Request, res: Response) => {
 });
 
 // Biome backdrops: Muse Image redraws the player's photo as pixel game scenery (same drawing cap as creatures)
-app.post('/api/meta/biome-art', (req: Request, res: Response) => {
+app.post('/api/meta/biome-art', asyncRoute(async (req: Request, res: Response) => {
   if (!metaModelApiKey()) {
     res.status(503).json({ error: 'META_API_KEY is not configured in server environment.' });
     return;
@@ -329,20 +333,20 @@ app.post('/api/meta/biome-art', (req: Request, res: Response) => {
   }
   countMuseImage();
   const name = typeof req.body?.name === 'string' ? req.body.name : '';
-  res.json({ success: true, jobId: startJob(() => drawCreatureWithMuseImage({ imageUrl, objectName: name, prompt: buildBiomeArtPrompt(name) })) });
-});
+  res.json({ success: true, jobId: await startJob(() => drawCreatureWithMuseImage({ imageUrl, objectName: name, prompt: buildBiomeArtPrompt(name) })) });
+}));
 
-app.get('/api/meta/biome-art/:id', (req: Request, res: Response) => {
-  const job = getJob(String(req.params.id));
+app.get('/api/meta/biome-art/:id', asyncRoute(async (req: Request, res: Response) => {
+  const job = await getJob(String(req.params.id));
   if (!job) {
     res.status(404).json({ error: 'Unknown backdrop request.' });
     return;
   }
   res.json({ status: job.status, result: job.result, error: job.error });
-});
+}));
 
-app.get('/api/meta/creature-art/:id', (req: Request, res: Response) => {
-  const job = getJob(String(req.params.id));
+app.get('/api/meta/creature-art/:id', asyncRoute(async (req: Request, res: Response) => {
+  const job = await getJob(String(req.params.id));
   if (!job) {
     res.status(404).json({ error: 'Unknown creature art request.' });
     return;
@@ -353,78 +357,78 @@ app.get('/api/meta/creature-art/:id', (req: Request, res: Response) => {
     error: job.error,
     provenance: { provider: 'meta', model: 'muse-image-1.0', isLive: true, timestamp: Date.now() }
   });
-});
+}));
 
 // Live chat with a creature: Muse Spark on Fireworks, run as a background job like the sprite review.
 // Incubator: Muse Spark suggests a name for a newly hatched creature
-app.post('/api/fireworks/name', (req: Request, res: Response) => {
-  res.json({ success: true, jobId: startJob(() => suggestCreatureName(req.body)) });
-});
+app.post('/api/fireworks/name', asyncRoute(async (req: Request, res: Response) => {
+  res.json({ success: true, jobId: await startJob(() => suggestCreatureName(req.body)) });
+}));
 
-app.get('/api/fireworks/name/:id', (req: Request, res: Response) => {
-  const job = getJob(String(req.params.id));
+app.get('/api/fireworks/name/:id', asyncRoute(async (req: Request, res: Response) => {
+  const job = await getJob(String(req.params.id));
   if (!job) {
     res.status(404).json({ error: 'Unknown name request.' });
     return;
   }
   res.json({ status: job.status, result: job.result, error: job.error });
-});
+}));
 
-app.post('/api/fireworks/chat', (req: Request, res: Response) => {
+app.post('/api/fireworks/chat', asyncRoute(async (req: Request, res: Response) => {
   const input = sanitizeChatInput(req.body);
   if (!input) {
     res.status(400).json({ error: 'A creature and a message are required.' });
     return;
   }
-  res.json({ success: true, jobId: startJob(() => chatWithCreature(input)) });
-});
+  res.json({ success: true, jobId: await startJob(() => chatWithCreature(input)) });
+}));
 
-app.get('/api/fireworks/chat/:id', (req: Request, res: Response) => {
-  const job = getJob(String(req.params.id));
+app.get('/api/fireworks/chat/:id', asyncRoute(async (req: Request, res: Response) => {
+  const job = await getJob(String(req.params.id));
   if (!job) {
     res.status(404).json({ error: 'Unknown chat request.' });
     return;
   }
   res.json({ status: job.status, result: job.result, error: job.error });
-});
+}));
 
 // Two creatures talking to each other: friends or rivals by material, written by Muse Spark on Fireworks.
-app.post('/api/fireworks/banter', (req: Request, res: Response) => {
+app.post('/api/fireworks/banter', asyncRoute(async (req: Request, res: Response) => {
   const input = sanitizeBanterInput(req.body);
   if (!input) {
     res.status(400).json({ error: 'Two creatures are required.' });
     return;
   }
-  res.json({ success: true, jobId: startJob(() => banterBetweenCreatures(input)) });
-});
+  res.json({ success: true, jobId: await startJob(() => banterBetweenCreatures(input)) });
+}));
 
-app.get('/api/fireworks/banter/:id', (req: Request, res: Response) => {
-  const job = getJob(String(req.params.id));
+app.get('/api/fireworks/banter/:id', asyncRoute(async (req: Request, res: Response) => {
+  const job = await getJob(String(req.params.id));
   if (!job) {
     res.status(404).json({ error: 'Unknown banter request.' });
     return;
   }
   res.json({ status: job.status, result: job.result, error: job.error });
-});
+}));
 
 // Photo quests: Muse Spark on Fireworks checks the player's photo against what the creature asked for.
-app.post('/api/fireworks/quest', (req: Request, res: Response) => {
+app.post('/api/fireworks/quest', asyncRoute(async (req: Request, res: Response) => {
   const input = sanitizeQuestInput(req.body);
   if (!input) {
     res.status(400).json({ error: 'A quest, a photo under 3 MB and a creature are required.' });
     return;
   }
-  res.json({ success: true, jobId: startJob(() => checkQuestPhoto(input)) });
-});
+  res.json({ success: true, jobId: await startJob(() => checkQuestPhoto(input)) });
+}));
 
-app.get('/api/fireworks/quest/:id', (req: Request, res: Response) => {
-  const job = getJob(String(req.params.id));
+app.get('/api/fireworks/quest/:id', asyncRoute(async (req: Request, res: Response) => {
+  const job = await getJob(String(req.params.id));
   if (!job) {
     res.status(404).json({ error: 'Unknown quest check.' });
     return;
   }
   res.json({ status: job.status, result: job.result, error: job.error });
-});
+}));
 
 // Local conversion is implemented; no image-generation provider is connected.
 app.get('/api/pixelate/status', (_req: Request, res: Response) => {
@@ -435,6 +439,11 @@ app.post('/api/pixelate/generate', (_req: Request, res: Response) => {
 });
 
 // Main dev / prod mounting
+app.use((err: unknown, _req: Request, res: Response, next: express.NextFunction) => {
+  if (res.headersSent) return next(err);
+  res.status(503).json({ status: 'error', error: AI_BUSY_MESSAGE, retryable: true });
+});
+
 async function startServer() {
   const isProduction = process.env.NODE_ENV === 'production';
 

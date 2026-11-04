@@ -7,7 +7,7 @@ import { nextWeatherTalk, weatherLine, TalkMemo } from '../game/weatherTalk';
 // Photo-based speech: Muse Spark lines for this creature, or the default line until they arrive
 const voiceLine = (creatureId: string, topic: SpeechTopic, fallback: string) =>
   creatureVoice.photoLine(creatureId, topic, fallback, { phase: phaseFromClock(Date.now(), loadWorldEpoch(), WORLD_DAY_MS) });
-import { loadWorldRegion, saveWorldRegion, normalizeHome, createWorldRegion } from '../game/worldRegions';
+import { loadWorldRegion, saveWorldRegion, transferWorldItem, normalizeHome, createWorldRegion } from '../game/worldRegions';
 import { WorldViewport } from './WorldViewport';
 import { CreatureChat } from './CreatureChat';
 import { PhotoQuest } from './PhotoQuest';
@@ -990,18 +990,11 @@ export const HabitatCanvas: React.FC<HabitatCanvasProps> = ({
       }
       const { id: _old, gridX: _gx, gridY: _gy, type: _type, ...extra } = decor;
       const moved = addDecoration(target, decor.type, x, check.snappedY !== undefined ? check.snappedY : gridY, extra);
-      try {
-        saveWorldRegion(moved);
-      } catch {
-        setTravelError('Could not save the next area. Export your save or free device space.');
-        return;
-      }
-      // Both areas are saved at once (and undo history starts fresh), so Undo or Cancel can never leave the item in both
       const here = { ...world, decorations: world.decorations.filter((d) => d.id !== decorId), updatedAt: Date.now() };
       try {
-        saveWorldRegion(here);
+        transferWorldItem(here, moved);
       } catch {
-        setTravelError('Could not save this area. Export your save or free device space.');
+        setTravelError('The move could not finish saving. Free device space and reload to recover it before editing further.');
         return;
       }
       historyRef.current.clear();

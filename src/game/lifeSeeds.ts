@@ -1,3 +1,4 @@
+import type { CreatureDNA } from './creatureTypes';
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -37,6 +38,7 @@ export interface Wallet {
   careToday: number;
   /** One-time rewards already paid out (for example the first garden adventure), so none is ever paid twice */
   receipts: string[];
+  fusion?: { id: string; cost: number; result?: CreatureDNA };
 }
 
 export const NEW_WALLET: Wallet = {
@@ -58,6 +60,7 @@ const day = (v: unknown) => (typeof v === 'string' ? v.slice(0, 10) : '');
 export function cleanWallet(raw: any): Wallet {
   if (!raw || typeof raw !== 'object') return { ...NEW_WALLET };
   return {
+    fusion: raw.fusion && typeof raw.fusion.id === 'string' && Number.isFinite(raw.fusion.cost) && raw.fusion.cost > 0 ? raw.fusion : undefined,
     seeds: count(raw.seeds, START_SEEDS),
     gems: count(raw.gems, START_GEMS),
     sparkles: count(raw.sparkles, START_SPARKLES),
@@ -195,7 +198,7 @@ export const SHOP_ITEMS: ShopItem[] = [
   }
 ];
 
-export type BuyResult = { ok: true; wallet: Wallet } | { ok: false; reason: 'unknown' | 'too-poor' | 'already-full' };
+export type BuyResult = { ok: true; wallet: Wallet } | { ok: false; reason: 'unknown' | 'too-poor' | 'already-full' | 'storage' };
 
 export function buy(w: Wallet, itemId: string, now: number): BuyResult {
   const item = SHOP_ITEMS.find((i) => i.id === itemId);
@@ -238,11 +241,11 @@ export class WalletBook {
     let ok = false;
     try {
       this.store?.setItem(WALLET_KEY, text);
-      ok = !this.store || this.store.getItem(WALLET_KEY) === text;
+      ok = !!this.store && this.store.getItem(WALLET_KEY) === text;
     } catch {
       ok = false; // blocked or full storage
     }
-    this.listeners.forEach((fn) => fn());
+    this.reload();
     return ok;
   }
 
@@ -283,49 +286,69 @@ export class WalletBook {
     }
   }
 
+  beginFusion(cost: number): string | null {
+    const w = this.get();
+    if (w.fusion || w.sparkles < cost) return null;
+    const id = crypto.randomUUID();
+    return this.save({ ...w, sparkles: w.sparkles - cost, fusion: { id, cost } }) ? id : null;
+  }
+
+  finishFusion(id: string, result: CreatureDNA): boolean {
+    const w = this.get();
+    return w.fusion?.id === id && this.save({ ...w, fusion: { ...w.fusion, result } });
+  }
+
+  refundFusion(id: string): boolean {
+    const w = this.get();
+    if (w.fusion?.id !== id) return true;
+    return this.save({ ...w, sparkles: w.sparkles + w.fusion.cost, fusion: undefined });
+  }
+
+  claimFusion(id: string): boolean {
+    const w = this.get();
+    return w.fusion?.id !== id || this.save({ ...w, fusion: undefined });
+  }
+
   spendSeed(): boolean {
     const next = spend(this.get(), 'seeds');
-    if (next) this.save(next);
-    return !!next;
+    return !!next && this.save(next);
   }
 
   spendGem(): boolean {
     const next = spend(this.get(), 'gems');
-    if (next) this.save(next);
-    return !!next;
+    return !!next && this.save(next);
   }
 
-  refundSeed(): void {
+  refundSeed(): boolean {
     const w = this.get();
-    this.save({ ...w, seeds: w.seeds + 1 });
+    return this.save({ ...w, seeds: w.seeds + 1 });
   }
 
   /** Spends Sparkle Coins (the Fusion Lab's price); false when there are not enough. */
   spendSparkles(n: number): boolean {
     const w = this.get();
     if (w.sparkles < n) return false;
-    this.save({ ...w, sparkles: w.sparkles - n });
-    return true;
+    return this.save({ ...w, sparkles: w.sparkles - n });
   }
 
-  refundSparkles(n: number): void {
+  refundSparkles(n: number): boolean {
     const w = this.get();
-    this.save({ ...w, sparkles: w.sparkles + n });
+    return this.save({ ...w, sparkles: w.sparkles + n });
   }
 
-  refundGem(): void {
+  refundGem(): boolean {
     const w = this.get();
-    this.save({ ...w, gems: w.gems + 1 });
+    return this.save({ ...w, gems: w.gems + 1 });
   }
 
   rewardAdventure(seeds = 1, gems = 1, sparkles = 20): { seeds: number; gems: number; sparkles: number } {
     const w = this.get();
-    this.save({
+    if (!this.save({
       ...w,
       seeds: w.seeds + seeds,
       gems: w.gems + gems,
       sparkles: w.sparkles + sparkles
-    });
+    })) throw new Error('Could not save the reward. Free device space and try again.');
     return { seeds, gems, sparkles };
   }
 
@@ -335,27 +358,24 @@ export class WalletBook {
 
   recordCheck(): boolean {
     const next = recordCheck(this.get(), this.clock());
-    if (next) this.save(next);
-    return !!next;
+    return !!next && this.save(next);
   }
 
   refundCheck(reservedDay?: string): boolean {
     const next = refundCheck(this.get(), this.clock(), reservedDay);
-    if (next) this.save(next);
-    return !!next;
+    return !!next && this.save(next);
   }
 
   rewardQuest(): { seeds: number; gems: number; sparkles: number } {
     const out = questReward(this.get());
-    this.save(out.wallet);
+    if (!this.save(out.wallet)) throw new Error("Could not save your reward. Free device space and try again.");
     return { seeds: out.seeds, gems: out.gems, sparkles: out.sparkles };
   }
 
   /** +1 Sparkle Coin for a care action; false once today's care coins are all earned. */
   rewardCare(): boolean {
     const next = careReward(this.get(), this.clock());
-    if (next) this.save(next);
-    return !!next;
+    return !!next && this.save(next);
   }
 
   /** Whether an item can be bought right now, and why not. */
@@ -365,7 +385,7 @@ export class WalletBook {
 
   buy(itemId: string): BuyResult {
     const out = buy(this.get(), itemId, this.clock());
-    if (out.ok) this.save(out.wallet);
+    if (out.ok && !this.save(out.wallet)) return { ok: false, reason: "storage" };
     return out;
   }
 }

@@ -20,6 +20,11 @@ export function createWorldRegion(x: number): BiomeWorldState {
 }
 
 export function loadWorldRegion(x: number): BiomeWorldState {
+  // The journal is the committed view until both ordinary region keys are compacted.
+  const pending = pendingTransfer();
+  const committed = pending?.find(w => w.biome === regionId(x));
+  if (pending) { try { recoverWorldTransfer(); } catch { /* read the committed journal */ } }
+  if (committed) return committed;
   if (x === 0) return loadBiomeWorldFromStorage('greenhouse');
   const raw = typeof localStorage !== 'undefined' ? localStorage.getItem(getStorageKey(regionId(x))) : null;
   if (raw) {
@@ -30,5 +35,27 @@ export function loadWorldRegion(x: number): BiomeWorldState {
 
 export function saveWorldRegion(world: BiomeWorldState): void {
   // Let the UI handle quota errors before moving away from unsaved edits.
+  recoverWorldTransfer();
   localStorage.setItem(getStorageKey(world.biome), JSON.stringify(world));
+}
+
+
+// A write-ahead record makes both region writes recoverable after quota failures or reloads.
+const TRANSFER_KEY = 'oddlings_world_transfer_v1';
+export function pendingTransfer(): BiomeWorldState[] | null {
+  const raw = typeof localStorage === 'undefined' ? null : localStorage.getItem(TRANSFER_KEY);
+  return raw ? JSON.parse(raw) as BiomeWorldState[] : null;
+}
+export function recoverWorldTransfer(): void {
+  const worlds = pendingTransfer();
+  if (!worlds) return;
+  for (const world of worlds) localStorage.setItem(getStorageKey(world.biome), JSON.stringify(world));
+  localStorage.removeItem(TRANSFER_KEY);
+}
+
+export function transferWorldItem(source: BiomeWorldState, target: BiomeWorldState): void {
+  recoverWorldTransfer();
+  localStorage.setItem(TRANSFER_KEY, JSON.stringify([source, target]));
+  // The journal write commits both regions atomically; compaction is best effort.
+  try { recoverWorldTransfer(); } catch { /* future reads use the committed journal */ }
 }

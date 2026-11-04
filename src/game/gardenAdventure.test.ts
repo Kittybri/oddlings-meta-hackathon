@@ -36,7 +36,7 @@ class MockStorage {
 
 test('1. Complete adventure end-to-end with free starter residents', () => {
   const mockStore = new MockStorage();
-  const advBook = new GardenAdventureBook(mockStore);
+  const advBook = new GardenAdventureBook(mockStore, new WalletBook(mockStore));
   const thornbrew = JSON.parse(JSON.stringify(INITIAL_ODDLINGS[0])); // Thornbrew (water)
   const luxacanth = JSON.parse(JSON.stringify(INITIAL_ODDLINGS[1])); // Luxacanth (restore)
   thornbrew.biomeId = 'greenhouse';
@@ -97,7 +97,7 @@ test('1. Complete adventure end-to-end with free starter residents', () => {
 
 test('2. Reload and resume persistence from saved storage', () => {
   const mockStore = new MockStorage();
-  const advBook = new GardenAdventureBook(mockStore);
+  const advBook = new GardenAdventureBook(mockStore, new WalletBook(mockStore));
   advBook.accept('greenhouse');
   advBook.linkSeed('seed-abc-123', 'greenhouse');
 
@@ -105,7 +105,7 @@ test('2. Reload and resume persistence from saved storage', () => {
   assert.ok(serialized);
 
   // Create a new instance reading from the same storage
-  const reloadedBook = new GardenAdventureBook(mockStore);
+  const reloadedBook = new GardenAdventureBook(mockStore, new WalletBook(mockStore));
   const reloaded = reloadedBook.get();
   assert.equal(reloaded.id, 'adventure-first-garden-v1');
   assert.equal(reloaded.step, 'seed_planted');
@@ -129,7 +129,7 @@ test('3. Invalid target consumes no cooldown or adventure progress', () => {
 
   // Adventure watering rejected
   const mockStore = new MockStorage();
-  const advBook = new GardenAdventureBook(mockStore);
+  const advBook = new GardenAdventureBook(mockStore, new WalletBook(mockStore));
   advBook.accept('greenhouse');
   const advRes = advBook.recordWatering({ casterId: thornbrew.id }, emptyWorld);
   assert.equal(advRes.ok, false);
@@ -138,7 +138,7 @@ test('3. Invalid target consumes no cooldown or adventure progress', () => {
 
 test('4. Removed target seed handling and seamless replacement', () => {
   const mockStore = new MockStorage();
-  const advBook = new GardenAdventureBook(mockStore);
+  const advBook = new GardenAdventureBook(mockStore, new WalletBook(mockStore));
 
   let world: BiomeWorldState = { ...createStarterWorld('greenhouse'), decorations: [] as DecorationInstance[] };
   world = addDecoration(world, 'seed', 10, 12);
@@ -177,7 +177,7 @@ test('5. Moved resident cannot use ability or advance adventure in wrong biome',
   assert.ok(res.message.includes('Move this Oddling here'));
 
   const mockStore = new MockStorage();
-  const advBook = new GardenAdventureBook(mockStore);
+  const advBook = new GardenAdventureBook(mockStore, new WalletBook(mockStore));
   advBook.accept('greenhouse');
   const advRes = advBook.recordWatering({ casterId: thornbrew.id }, world);
   assert.equal(advRes.ok, false);
@@ -185,7 +185,7 @@ test('5. Moved resident cannot use ability or advance adventure in wrong biome',
 
 test('6. Duplicate contribution by same resident is rejected (requires second resident)', () => {
   const mockStore = new MockStorage();
-  const advBook = new GardenAdventureBook(mockStore);
+  const advBook = new GardenAdventureBook(mockStore, new WalletBook(mockStore));
   const thornbrew = JSON.parse(JSON.stringify(INITIAL_ODDLINGS[0]));
   const luxacanth = JSON.parse(JSON.stringify(INITIAL_ODDLINGS[1]));
   thornbrew.biomeId = 'greenhouse';
@@ -212,7 +212,7 @@ test('6. Duplicate contribution by same resident is rejected (requires second re
 
 test('7. Idempotent reward claim prevents repeated claim and duplicate currency award', () => {
   const mockStore = new MockStorage();
-  const advBook = new GardenAdventureBook(mockStore);
+  const advBook = new GardenAdventureBook(mockStore, new WalletBook(mockStore));
   const thornbrew = JSON.parse(JSON.stringify(INITIAL_ODDLINGS[0]));
   const luxacanth = JSON.parse(JSON.stringify(INITIAL_ODDLINGS[1]));
   thornbrew.biomeId = 'greenhouse';
@@ -240,7 +240,7 @@ test('7. Idempotent reward claim prevents repeated claim and duplicate currency 
 
 test('8. Rain satisfies watering step once without terrain tile damage and cannot complete bloom alone', () => {
   const mockStore = new MockStorage();
-  const advBook = new GardenAdventureBook(mockStore);
+  const advBook = new GardenAdventureBook(mockStore, new WalletBook(mockStore));
 
   let world: BiomeWorldState = { ...createStarterWorld('greenhouse'), decorations: [] as DecorationInstance[] };
   world = addDecoration(world, 'seed', 15, 12);
@@ -296,7 +296,7 @@ test('10. Generation failure refunds reserved resources and retains state for re
 
 test('11. When watered by rain, TWO distinct actual residents are strictly required before blooming', () => {
   const mockStore = new MockStorage();
-  const advBook = new GardenAdventureBook(mockStore);
+  const advBook = new GardenAdventureBook(mockStore, new WalletBook(mockStore));
   const thornbrew = JSON.parse(JSON.stringify(INITIAL_ODDLINGS[0]));
   const luxacanth = JSON.parse(JSON.stringify(INITIAL_ODDLINGS[1]));
   thornbrew.biomeId = 'greenhouse';
@@ -399,7 +399,7 @@ test('12b. A wallet save that fails pays nothing and leaves the adventure ready 
 
 test('13. Target seed replacement with unwatered seed reverts stage to seed_planted', () => {
   const mockStore = new MockStorage();
-  const advBook = new GardenAdventureBook(mockStore);
+  const advBook = new GardenAdventureBook(mockStore, new WalletBook(mockStore));
   const thornbrew = JSON.parse(JSON.stringify(INITIAL_ODDLINGS[0]));
   thornbrew.biomeId = 'greenhouse';
 
