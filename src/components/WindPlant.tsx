@@ -1,12 +1,14 @@
+import { ScenePaused } from './sceneMotion';
 import gardenTree from '../../garden-tree-px.png';
 import React,{useEffect,useRef,useContext,createContext} from 'react';
 import {weatherBus} from '../game/weatherBus';
 import {windGust} from '../game/wind';
 const WindActive=createContext(true);
 export function WindPlant({children,offset=0,tall=false,paused=false}:{children:React.ReactNode;offset?:number;tall?:boolean;paused?:boolean}){
+ const scenePaused = React.useContext(ScenePaused);
  const ref=useRef<HTMLDivElement>(null);
  useEffect(()=>{
-  if(paused || matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  if(scenePaused || paused || matchMedia('(prefers-reduced-motion: reduce)').matches)return;
   let frame=0,last=0,previous='';
   const tick=(now:number)=>{
    frame=requestAnimationFrame(tick);if(now-last<32||document.hidden)return;last=now;
@@ -16,8 +18,8 @@ export function WindPlant({children,offset=0,tall=false,paused=false}:{children:
   };
   frame=requestAnimationFrame(tick);
   return()=>{cancelAnimationFrame(frame);if(ref.current)ref.current.style.transform='none';};
- },[offset,tall,paused]);
- return <WindActive.Provider value={!paused}><div data-testid="wind-plant" ref={ref} className="w-full h-full" style={{transformOrigin:'50% 100%'}}>{children}</div></WindActive.Provider>;
+ },[offset,tall,paused,scenePaused]);
+ return <WindActive.Provider value={!paused && !scenePaused}><div data-testid="wind-plant" ref={ref} className="w-full h-full" style={{transformOrigin:'50% 100%'}}>{children}</div></WindActive.Provider>;
 }
 /** A leaf leaves the canopy, tumbles rightward, and sinks toward the ground. */
 export function fallingLeafPose(age:number,wind:number,seed:number){

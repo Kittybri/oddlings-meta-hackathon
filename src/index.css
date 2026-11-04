@@ -358,3 +358,6 @@
  .oddlings-app .chat-overlay > [role=dialog] {max-height:100%;overflow:hidden}
  .chat-overlay form {flex-shrink:0}
 }
+.world-viewport[data-editing="true"] .world-strip *,
+.world-viewport[data-editing="true"] .world-strip *::before,
+.world-viewport[data-editing="true"] .world-strip *::after { animation-play-state:paused }

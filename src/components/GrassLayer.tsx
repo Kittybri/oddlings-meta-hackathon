@@ -1,3 +1,4 @@
+import { ScenePaused } from './sceneMotion';
 import {weatherBus} from '../game/weatherBus';
 import {windGust} from '../game/wind';
 import React,{useEffect,useMemo,useRef} from 'react';
@@ -8,13 +9,14 @@ export const GrassLayer = React.memo(function GrassLayer({world,actors,residents
   world:BiomeWorldState;actors?:React.RefObject<Record<string,GrassWalker>>;
   residents?:readonly string[];heldId?:string;paused?:boolean;
 }){
+ const scenePaused = React.useContext(ScenePaused);
   const patches=useMemo(()=>exposedGrass(world),[world.tiles]);
   const blades=useRef<Array<SVGGElement|null>>([]);
   const current=useRef({residents,heldId});current.current={residents,heldId};
   useEffect(()=>{
     const reset=()=>blades.current.forEach(el=>el?.setAttribute('transform','skewX(0)'));
     reset();
-    if(paused || matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+    if(scenePaused || paused || matchMedia('(prefers-reduced-motion: reduce)').matches)return;
     let frame=0,last=0;const previous:Record<string,GrassWalker>={};
     const bends=patches.map(()=>0);
     const tick=(now:number)=>{
@@ -45,7 +47,7 @@ export const GrassLayer = React.memo(function GrassLayer({world,actors,residents
     };
     frame=requestAnimationFrame(tick);
     return()=>{cancelAnimationFrame(frame);reset();};
-  },[patches,actors,paused]);
+  },[patches,actors,paused,scenePaused]);
   return <svg data-testid="reactive-grass" aria-hidden="true" className="absolute inset-0 w-full h-full pointer-events-none" style={{zIndex:21}} viewBox="0 0 768 384" preserveAspectRatio="none" shapeRendering="crispEdges">
     {patches.map((p,i)=><g key={`${p.x}:${p.y}`} transform={`translate(${p.x*16} ${p.y*16})`}>
       <g ref={el=>{blades.current[i]=el;}}>

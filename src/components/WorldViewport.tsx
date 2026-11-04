@@ -1,3 +1,4 @@
+import { ScenePaused } from "./sceneMotion";
 import {WindVisuals} from './WindVisuals';
 import { getWorldAtmosphere, loadWorldEpoch, WORLD_DAY_MS } from '../game/worldAtmosphere';
 import { WorldSky } from './WorldSky';
@@ -23,9 +24,33 @@ const browserStorage = () => {
 const regionWidth = (el: HTMLElement) => (el.firstElementChild as HTMLElement)?.clientWidth / 3 || el.clientWidth;
 const homeScroll = (el: HTMLElement) => regionWidth(el) + (regionWidth(el) - el.clientWidth) / 2;
 const previewTool = { type: 'brush' as const, material: 'grass' as const };
-export function WorldViewport({ enabled, editMode, region, neighbors, world, onTravel, children, buildExplore = false, onBuildExplore }: {
+function VisibleRain(props: React.ComponentProps<typeof RainLayer>) {
+  const paused = React.useContext(ScenePaused);
+  return paused ? null : <RainLayer {...props} />;
+}
+
+function WorldRegion({ active, children }: { active: boolean; children: React.ReactNode }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(active);
+  const editing = React.useContext(ScenePaused);
+  useEffect(() => {
+    const element = ref.current;
+    if (!element || active) return;
+    const observer = new IntersectionObserver(([entry]) => setVisible(entry.isIntersecting), {
+      root: element.closest('[aria-label="Scrollable World"]'),
+      rootMargin: '0px 32px'
+    });
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [active]);
+  return <div ref={ref} className="world-region relative h-full shrink-0" style={{ width: '33.333333%' }}>
+    <ScenePaused.Provider value={editing || (!active && !visible)}>{children}</ScenePaused.Provider>
+  </div>;
+}
+
+export function WorldViewport({ enabled, editMode, region, neighbors, world, onTravel, children, overlay, buildExplore = false, onBuildExplore }: {
   enabled: boolean; editMode: boolean; region: number; neighbors: [BiomeWorldState, BiomeWorldState]; world?: BiomeWorldState;
-  onTravel: (direction: number) => boolean; children: React.ReactNode;
+  onTravel: (direction: number) => boolean; children: React.ReactNode; overlay?: React.ReactNode;
   /** Build mode's Drag to explore switch, owned by the habitat so picking a build tool can turn it off (and the reverse) */
   buildExplore?: boolean; onBuildExplore?: (on: boolean) => void;
 }) {
@@ -100,7 +125,6 @@ export function WorldViewport({ enabled, editMode, region, neighbors, world, onT
     observer.observe(el);
     return () => { observer.disconnect(); cancelAnimationFrame(settle); };
   }, [region, enabled]);
-  useLayoutEffect(() => { if (enabled && scroller.current) scroller.current.scrollLeft = homeScroll(scroller.current); }, [editMode]);
   const travelScroll = () => {
     const el = scroller.current;
     if (!el || moving.current || drag.current || !userScrolling.current) return;
@@ -115,10 +139,11 @@ export function WorldViewport({ enabled, editMode, region, neighbors, world, onT
     if (!onTravel(direction)) { offset.current = null; el.scrollLeft = homeScroll(el); moving.current = false; }
   };
   const scroll = (n: number) => { userScrolling.current = true; scroller.current?.scrollBy({ left: n * scroller.current.clientWidth * .75, behavior: 'instant' }); };
-  if (!enabled) return <div data-explore-open={barOpen} data-world-region={region} className="world-viewport relative flex-1 min-h-0 w-full">{children}</div>;
-  return <div data-explore-open={barOpen} data-world-region={region} className="world-viewport relative flex-1 min-h-0 w-full">
+  if (!enabled) return <div data-explore-open={barOpen} data-world-region={region} className="world-viewport relative flex-1 min-h-0 w-full">{children}{overlay}</div>;
+  return <ScenePaused.Provider value={editMode}><div data-editing={editMode} data-explore-open={barOpen} data-world-region={region} className="world-viewport relative flex-1 min-h-0 w-full">
+    {overlay}
     <WorldSky atmosphere={atmosphere} weather={weather} />
-    <WindVisuals strength={weather.wind ?? 0} windy={weather.state === 'windy'} />
+    {!editMode && <WindVisuals strength={weather.wind ?? 0} windy={weather.state === 'windy'} />}
     {!barOpen ? (
       <button onClick={() => setBarOpen(true)} title="Show explore and weather controls" aria-label="Show explore and weather controls" className="absolute top-2 left-2 z-40 px-2 py-1 rounded-lg bg-slate-950/80 border border-emerald-500/50 text-xs text-emerald-100 shadow-lg">🧭</button>
     ) : (
@@ -146,11 +171,12 @@ export function WorldViewport({ enabled, editMode, region, neighbors, world, onT
  // Background trees sway harder as the weather's wind picks up (0 calm to 1 storm)
  '--wind': Math.max(0, Math.min(1, weather.wind ?? 0)), '--night-dark': Math.max(0, Math.min(1, (1 - atmosphere.light) / .85)), '--night-glow': Math.max(0, Math.min(1, Math.max((1 - atmosphere.light) / .65, weather.cloud * .9))), touchAction: pan ? 'pan-y' : 'pan-x', filter: `brightness(${(.5 + atmosphere.light * .5) * (1 - weather.cloud * .22)}) saturate(${1 - weather.cloud * .4})`, transition: 'filter 1s linear' } as React.CSSProperties}>
       <div className="world-strip flex h-full" style={{ pointerEvents: drag.current?.on ? 'none' : undefined }}>
-        {[0, 1, 2].map(i => <div key={i} className="world-region relative h-full shrink-0" style={{ width: '33.333333%' }}>
+        {[0, 1, 2].map(i => <WorldRegion key={i} active={i === 1}>
           {i === 1 ? children : <BiomeWorldRenderer sharedSky region={region + (i === 0 ? -1 : 1)} world={neighbors[i === 0 ? 0 : 1]} theme="greenhouse" isEditMode={false} activeTool={previewTool} brushSize={1} onPaintStroke={noop} onStrokeStart={noop} onStrokeEnd={noop} onPlaceDecoration={noop} onRemoveDecoration={noop} />}
-          {raining && <RainLayer rain={weather.rain} ground={grounds[i]} />}
-        </div>)}
+          {raining && <VisibleRain rain={weather.rain} ground={grounds[i]} />}
+        </WorldRegion>)}
       </div>
     </div>
-  </div>;
+  </div></ScenePaused.Provider>;
 }
+

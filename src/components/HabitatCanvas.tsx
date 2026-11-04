@@ -420,26 +420,26 @@ export const HabitatCanvas: React.FC<HabitatCanvasProps> = ({
   const creatureEls = useRef<Record<string, HTMLDivElement | null>>({});
   // Speech bubbles and name tags live in their own layer above the front grass, and follow their creature
   const labelEls = useRef<Record<string, HTMLDivElement | null>>({});
-  // The garden's adventure buttons stay put on screen; they show only at home and hide while the World is moving
-  useEffect(() => {
-    const first = document.querySelector<HTMLElement>('[data-follow-view]');
-    const scroller = first?.closest<HTMLElement>('.overflow-x-auto');
-    if (!scroller) return;
-    const follow = () => {
-      const regionWidth = (scroller.firstElementChild as HTMLElement)?.clientWidth / 3 || scroller.clientWidth;
-      const home = regionWidth + (regionWidth - scroller.clientWidth) / 2;
-      const dx = scroller.scrollLeft - regionWidth - (regionWidth - scroller.clientWidth);
-      // Away from home, or while the World is moving, they disappear fully instead of sliding half off screen
-      const away = activeHabitatTheme === 'greenhouse' && worldRegion !== 0;
-      document.querySelectorAll<HTMLElement>('[data-follow-view]').forEach((el) => {
-        el.style.transform = dx ? 'translateX(' + dx + 'px)' : '';
-        el.style.visibility = away || Math.abs(scroller.scrollLeft - home) > 2 ? 'hidden' : '';
-      });
+  const cameraGeometry = useRef({ regionWidth: 0, viewportWidth: 0, regionLeft: 0 });
+  React.useLayoutEffect(() => {
+    const region = containerRef.current;
+    const viewport = region?.closest('.world-viewport');
+    if (!region || !viewport) return;
+    const measure = () => {
+      const bounds = viewport.getBoundingClientRect();
+      const terrain = region.getBoundingClientRect();
+      cameraGeometry.current = { regionWidth: terrain.width, viewportWidth: bounds.width, regionLeft: terrain.left - bounds.left };
     };
-    follow();
-    scroller.addEventListener('scroll', follow, { passive: true });
-    return () => scroller.removeEventListener('scroll', follow);
-  });
+    const observer = new ResizeObserver(measure);
+    observer.observe(region);
+    observer.observe(viewport);
+    viewport.addEventListener('scroll', measure, true);
+    measure();
+    return () => {
+      observer.disconnect();
+      viewport.removeEventListener('scroll', measure, true);
+    };
+  }, [activeHabitatTheme, worldRegion]);
   const committedSig = useRef('');
   const setSimStates = useCallback(
     (update: Record<string, CreatureSimState> | ((prev: Record<string, CreatureSimState>) => Record<string, CreatureSimState>)) => {
@@ -460,14 +460,14 @@ export const HabitatCanvas: React.FC<HabitatCanvasProps> = ({
       const label = labelEls.current[id];
       if (label && !el?.dataset.held) {
         label.style.left = s.xPct + '%';
-        const bubble = label.querySelector<HTMLElement>('.speech-balloon');
-        const camera = bubble && label.closest('.world-viewport');
-        if (bubble && camera) {
-          const bounds = camera.getBoundingClientRect();
-          const x = label.getBoundingClientRect().left;
-          const half = bubble.offsetWidth / 2;
-          bubble.style.left = (Math.min(bounds.right - half, Math.max(bounds.left + half, x)) - x) + 'px';
-          bubble.style.visibility = x < bounds.left || x > bounds.right ? 'hidden' : '';
+        if (s.bubbleText) {
+          const { regionWidth, viewportWidth, regionLeft } = cameraGeometry.current;
+          const x = regionLeft + regionWidth * s.xPct / 100;
+          const half = Math.min(85, viewportWidth / 2);
+          label.style.setProperty('--speech-offset', (Math.max(half, Math.min(viewportWidth - half, x)) - x) + 'px');
+          label.style.visibility = x < 0 || x > viewportWidth ? 'hidden' : '';
+        } else {
+          label.style.visibility = '';
         }
       }
       sig += id + ':' + Math.round(s.gridX) + ',' + Math.round(s.gridY) + ',' + s.mood + ',' + s.direction + ',' + (s.bubbleText || '') + ',' + s.isInWater + ',' + s.isInteracting + ';';
@@ -1508,36 +1508,7 @@ export const HabitatCanvas: React.FC<HabitatCanvasProps> = ({
       />
 
       {travelError && <p role="alert" className="px-4 py-2 text-xs bg-rose-950 text-rose-200">{travelError}</p>}
-      <WorldViewport editMode={isEditMode} enabled={activeHabitatTheme === 'greenhouse'} region={worldRegion} neighbors={neighbors} world={world} onTravel={handleTravel} buildExplore={buildExplore} onBuildExplore={setBuildExplore}>
-      {/* Main Living Habitat Playfield Canvas */}
-      <div
-        ref={containerRef}
-        onClick={handleDropTreatOnTerrain}
-        className="relative h-full w-full overflow-hidden"
-      >
-        {/* Procedural 16-Bit Biome World (Grid Tiles, Water, Decorations, Parallax Backdrop) */}
-        <BiomeWorldRenderer
-          region={worldRegion}
-          world={world}
-          grassActors={simRef}
-          grassResidents={residentGrassIds}
-          heldCreatureId={heldCreature?.id}
-          sharedSky={activeHabitatTheme === 'greenhouse'}
-          theme={activeHabitatTheme}
-          isEditMode={isEditMode}
-          activeTool={activeTool}
-          brushSize={brushSize}
-          onPaintStroke={stableWorldActions.onPaintStroke}
-          onStrokeStart={stableWorldActions.onStrokeStart}
-          onStrokeEnd={stableWorldActions.onStrokeEnd}
-          onPlaceDecoration={stableWorldActions.onPlaceDecoration}
-          onRemoveDecoration={stableWorldActions.onRemoveDecoration}
-          onMoveDecoration={stableWorldActions.onMoveDecoration}
-          onMoveTile={stableWorldActions.onMoveTile}
-        />
-
-        {/* Greenhouse Garden Tasks & First Garden Adventure Widgets */}
-        {!isEditMode && (
+      <WorldViewport overlay={!isEditMode && (activeHabitatTheme !== "greenhouse" || worldRegion === 0) && (
           <div data-follow-view data-garden-open={gardenMenu} className="absolute top-3 right-3 z-30 flex flex-col items-end gap-2 pointer-events-auto">
             <button className="phone-control" aria-expanded={gardenMenu} onClick={() => setGardenMenu(!gardenMenu)}>🌱 Garden · {Number(!!gardenTasks.plantedSeed)+Number(!!gardenTasks.grownFlower)+Number(!!gardenTasks.oddlingEnjoyedPond)}/3</button>
             <button
@@ -1694,7 +1665,33 @@ export const HabitatCanvas: React.FC<HabitatCanvasProps> = ({
               </div>
             )}
           </div>
-        )}
+        )} editMode={isEditMode} enabled={activeHabitatTheme === 'greenhouse'} region={worldRegion} neighbors={neighbors} world={world} onTravel={handleTravel} buildExplore={buildExplore} onBuildExplore={setBuildExplore}>
+      {/* Main Living Habitat Playfield Canvas */}
+      <div
+        ref={containerRef}
+        onClick={handleDropTreatOnTerrain}
+        className="relative h-full w-full overflow-hidden"
+      >
+        {/* Procedural 16-Bit Biome World (Grid Tiles, Water, Decorations, Parallax Backdrop) */}
+        <BiomeWorldRenderer
+          region={worldRegion}
+          world={world}
+          grassActors={simRef}
+          grassResidents={residentGrassIds}
+          heldCreatureId={heldCreature?.id}
+          sharedSky={activeHabitatTheme === 'greenhouse'}
+          theme={activeHabitatTheme}
+          isEditMode={isEditMode}
+          activeTool={activeTool}
+          brushSize={brushSize}
+          onPaintStroke={stableWorldActions.onPaintStroke}
+          onStrokeStart={stableWorldActions.onStrokeStart}
+          onStrokeEnd={stableWorldActions.onStrokeEnd}
+          onPlaceDecoration={stableWorldActions.onPlaceDecoration}
+          onRemoveDecoration={stableWorldActions.onRemoveDecoration}
+          onMoveDecoration={stableWorldActions.onMoveDecoration}
+          onMoveTile={stableWorldActions.onMoveTile}
+        />
 
         {/* Dropped Food Treats on Playfield */}
         {!isEditMode &&
@@ -1880,7 +1877,7 @@ export const HabitatCanvas: React.FC<HabitatCanvasProps> = ({
             >
               {talking && (
                 <div
-                  style={{ bottom: headPx + (tagged ? 20 : 0) }}
+                  style={{ bottom: headPx + (tagged ? 20 : 0), left: "var(--speech-offset, 0px)", width: 170 }}
                   onClick={() => setSimStates(prev => ({ ...prev, [creature.id]: { ...prev[creature.id], bubbleText: undefined } }))} className="speech-balloon pointer-events-auto absolute left-0 -translate-x-1/2 w-max max-w-[170px] whitespace-normal text-center leading-snug bg-slate-950/95 text-slate-100 text-[11px] font-mono font-bold px-2.5 py-1 rounded-md border border-pink-400 shadow-xl animate-bounce"
                 >
                   {sim.bubbleText}
