@@ -4,7 +4,7 @@ Play: https://oddlings-meta.ai.studio/
 Source: https://github.com/Kittybri/oddlings-meta-hackathon
 License: Apache-2.0 (see LICENSE).
 
-Status: current source passes 134 tests, TypeScript and a production build with real media assets. Documentation and a three-minute recording plan are prepared. Latest repository reconciliation/publication, final video, stable deployment and the actual hackathon submission still need completion.
+Status: November 4 source reconciliation passes 150 tests, TypeScript and a production build with real media assets. The public game is deployed at the Play URL above. Final video and actual hackathon submission remain unverified.
 
 Participant guide: https://cerebralvalley.ai/e/meta-ai-developer-hackathon/details
 Submission form: https://cerebralvalley.ai/e/meta-ai-developer-hackathon/hackathon/submit
@@ -67,10 +67,18 @@ Verified live on November 2:
 - World areas keep resident assignments and support wandering toward built-up places and carrying decorations across area boundaries.
 - The optional First Garden Adventure links two residents' abilities to a bloom and factual diary keepsake, using a free starter path.
 - Reliability work covers egg claim persistence/retry, camera mount and stream cleanup, upload compression, complete item/region restore, biome-save error handling, analysis lifetime guards, quest-check refunds, diary refresh and library-capacity safety.
-- Credit protection uses one trusted Cloud Run proxy hop, retained player limits, a default **2,000-cent ($20) UTC daily reservation budget**, daily image/text count limits and four concurrent requests. Reservations are conservative estimates, not measured bills; file-backed accounting is not a hard guarantee across multiple instances or fresh containers. Missing/expired jobs return retry errors; client failure paths preserve applicable game-resource refunds.
+- Credit protection uses one trusted Cloud Run proxy hop, retained player limits, a default **2,000-cent ($20) UTC daily reservation budget**, daily image/text count limits and four concurrent requests. Reservations are conservative estimates, not measured bills; production uses shared Redis REST reservations, leases and job results, and blocks paid requests if shared storage is unavailable. Real multi-instance deployment behavior still needs verification. Missing/expired jobs return retry errors; client failure paths preserve applicable game-resource refunds.
 - Rendering work replaced per-cell terrain DOM with cached regional surfaces, skipped unnecessary hover updates and cached grass geometry. Development-preview DOM count fell about 84% (31,400 to 5,060). Four-resident gameplay still measured around 30 FPS; no 60 FPS or physical-mobile performance claim is made.
 
+### November 4 updates
+
+Fresh saves start with 500 Sparkles. Four first-run goals unlock a one-time 50-Sparkle claim. Collection includes named release confirmation on desktop and phone. Build has compact controls, corrected brush footprints and one-action undo/redo, and preserves ground props below floating platforms. Photo items check silhouette integrity and retry once automatically. The sample biome is a fixed real-photo/Muse-Image pair generated through the game endpoint. Claude's weather-driven tree movement is retained. See README for behavior and limits.
+
 ### Final automated verification
+
+November 4, 2026 (Pacific): **150 tests passed, 0 failed, 0 skipped; TypeScript and build passed.** An isolated API server on port 3127 and tests used blank provider keys. Latest main entry is about 447 kB minified / 134 kB gzip, with HabitatCanvas split into about 459 kB / 235 kB gzip. This does not establish a frame-rate or phone-performance guarantee.
+
+Historical verification follows.
 
 November 3, 2026 (Pacific): **134 tests passed, 0 failed, 0 skipped; TypeScript passed; production build passed** with current live source and real images/audio. The isolated API server and tests had provider keys blank. The local-day test fixture was repaired; runtime budget remains 2,000 cents. Main bundle warning remains (~1.17 MB minified / 439 kB gzip).
 
@@ -80,7 +88,7 @@ Not verified in this final pass: physical camera capture; a new paid full photo/
 
 - Rerun checks if the source changes after this verified snapshot; retain the final logs.
 - Record a fresh live end-to-end demonstration; retain the existing five-photo evidence as historical evidence.
-- Reconcile the latest source with the reviewed public repository and verify anonymous access. No GitHub work is performed by this task.
+- Recheck final deployed access from the judge browser. The November 4 reconciliation preserves the latest live weather changes and updates the public repository.
 - Record/upload the actual three-minute video using demo-script.md; verify judge access.
 - Choose and verify a stable live product URL; the AI Studio development preview is not a deployment guarantee.
 - Fill team name/members and the entrant's own survey answers.

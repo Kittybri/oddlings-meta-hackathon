@@ -6,6 +6,17 @@ License: Apache-2.0 (see LICENSE).
 
 Photograph an everyday object, incubate its egg, and welcome a pixel creature into a world you can build. Talk to your creatures, watch them chat with each other, send them on photo quests, and fuse them into hybrids with traceable inherited traits.
 
+## Current gameplay and judging build
+
+- Fresh playthroughs start with **500 Sparkles**, 10 Life Seeds and 5 Craft Gems. Existing valid wallet balances are preserved.
+- Finish the four first-run goals (discover two photographed objects, care, fuse, and save a built home) to unlock **Claim 50 Sparkles**. The wallet records a receipt to prevent repeat claims.
+- **Collection** shows discovered Oddlings, memories, diary, lineage and home assignment. **Release Oddling** asks for named confirmation, then removes that resident and its memories from the collection and habitat. The removal is saved before updating the screen; an empty collection remains empty after reload. The same option is available on phones.
+- Build opens its compact toolbox automatically. Hide folds it away; selecting a tool also folds it for placement. Decoration search and category filters help browse the library. Brush outlines match 1×1, 2×2 and 3×3 painted/erased footprints, and undo/redo skips unchanged snapshots. Floating terrain above an existing prop no longer pulls that prop off its supporting ground.
+- Desktop creature care folds into a compact bar. Phone care retains its earlier layout. Trees stand still in calm weather and sway when the weather is windy, including Claude's latest live changes.
+- **Sample landscape** displays a fixed original city photograph and its actual Muse Image result, generated through the game's biome-art endpoint. Opening the example makes no new paid generation request. Uploaded photos still offer local conversion or live AI scenery.
+- Photo-item artwork receives a local silhouette check after background removal. Empty, nearly solid-background or heavily fragmented cutouts and failed image requests get **one automatic retry** with the same photo and “Refining your item…” feedback. Capacity, billing and credential errors are not retried. This is a structural check, not an AI assessment of beauty or object resemblance. A saved item costs one Craft Gem; an unsuccessful drawing alone spends none.
+- Creature recognition validates structured output and retries malformed results once. The browser analysis deadline is now **140 seconds**. Player resource reservations and applicable failure refunds remain in place.
+
 ## Meta integration
 
 Oddlings uses the Muse Spark Open and Muse Image model families through three provider integrations. Every call goes through the app's own server; no API key belongs in client code or a `VITE_` variable.
@@ -40,7 +51,7 @@ Slow model calls run as background jobs: the POST route returns a `jobId` and th
 - **SAM is not integrated.** Object cut-out for the traced sprite uses Google's MediaPipe Interactive Segmenter in the browser (a non-Meta tool), with local color rules as a fallback.
 - **Muse Image has been checked on five real photos** (see [Evidence](#evidence-real-photos-to-oddlings)), not on a large set. Results vary from run to run; the five shown are the first and only run, not picked from several.
 - The traced photo sprite is local canvas processing (segmentation, hand removal, palette quantization). Muse Spark only suggests colors and the face position; it does not draw it.
-- Custom biome backgrounds have two distinct modes: local canvas conversion stays on-device; AI scenery sends a compressed photo through the server to Muse Image. Local conversion is never labeled Meta generation.
+- Custom uploaded biome backgrounds have two distinct modes: local canvas conversion stays on-device; AI scenery sends a compressed photo through the server to Muse Image. Local conversion is never labeled Meta generation.
 - Starter/manual creatures and local fallback sprites remain distinct from live Meta results. The current Fusion Lab uses live Muse Spark trait synthesis followed by Muse Image artwork; local fallback must not be presented as a successful live fusion.
 - Model replies are sometimes unusable. The app validates every reply, retries banter once, and shows a clear message instead of inventing results.
 
@@ -73,7 +84,7 @@ What went wrong: on the first try, one of five recognition requests (the mouse) 
 
 ### Changes since the photo evidence
 
-- **Two-model fusion:** Muse Spark combines parent traits; Muse Image sees both parents' pictures and draws the hybrid. Parents remain. Fusion costs 20 Sparkles, refunded if synthesis or drawing fails. The Field Guide retains lineage and model provenance.
+- **Two-model fusion:** Muse Spark combines parent traits; Muse Image sees both parents' pictures and draws the hybrid. Parents remain. Fusion costs 20 Sparkles, refunded if synthesis or drawing fails. The Collection retains lineage and model provenance.
 - **Photo items:** Muse Spark supplies an item description/category and an estimated real-world height; Muse Image supplies pixel artwork. Players can edit height in centimeters. Height maps to bounded, compressed game scale, not an accurate physical measurement. Items and their artwork are included in portable saves; a full library does not silently evict placed items.
 - **Hatching:** incubation is now 30 seconds, stored as absolute timestamps. Artwork begins while the egg incubates. At hatch, players can keep the generated name, enter one, or ask Muse Spark for another suggestion.
 - **World areas:** residents have saved area assignments, explore reachable terrain and are encouraged toward built-up places. Builders can carry placed items across area boundaries. Cross-area movement is implemented; repeated quota-failure and prolonged multi-area behavior have not been exhaustively tested.
@@ -93,7 +104,7 @@ Faults were forced in the live incubator by replacing the browser's network call
 | Create clicked three times quickly | One request, one egg at most | Charged once | Kept |
 | No answer at all | Request gives up after 90 seconds with a retry message | Refunded | Kept |
 
-The 90-second timeout case was checked in code, not waited out live. Eggs use absolute timestamps, so a refresh never restarts incubation.
+That historical 90-second timeout case was checked in code, not waited out live. The current analysis deadline is 140 seconds. Eggs use absolute timestamps, so a refresh never restarts incubation.
 
 ## Run
 
@@ -127,17 +138,20 @@ Integration tests use `ODDLINGS_TEST_URL` when set, otherwise port 3000. Use uns
 2. Let the saved 30-second timer expire (Muse Image draws the creature meanwhile, 16–23 s measured); refresh does not restart incubation. Crack and claim the creature.
 3. Select a resident in the habitat. Use its ability, or press TALK to chat with it, or QUEST to go on a photo quest.
 4. Leave two residents in the same world and watch them talk to each other.
-5. Fuse two creatures with the explicitly labeled Meta button, then inspect their lineage in the Field Guide.
-6. Paint terrain, plant seeds, place grounded decorations, and create named custom biomes with locally pixelated photo backgrounds. Assign residents to areas and carry placed items across World boundaries. Photo items can use Muse Image artwork and editable height estimates.
+5. Fuse two creatures with the explicitly labeled Meta button, then inspect their lineage in the Collection.
+6. Paint terrain, plant seeds, place grounded decorations, and create named custom biomes with local photo conversion or live Muse Image scenery. Assign residents to areas and carry placed items across World boundaries. Photo items can use Muse Image artwork and editable height estimates.
 
 Saves live in browser storage. The editor's embedded preview and the standalone preview can have separate saves. Use Save & Restore for transfers. Photos are sent to Baseten, Fireworks or the Meta Model API only when a live feature is used; local background conversion and sprite tracing stay on-device. Review provider policies before using personal photos.
 
 ## Verification
 
+- **Latest reconciliation, November 4, 2026 (Pacific): 150/150 tests passed, zero skipped; TypeScript and production build passed.** Claude's live weather/tree changes were preserved. Tests used an isolated server on port 3127 with provider keys blank. The fixed sample's after image was generated once through the deployed Meta biome-art route. Live phone checks covered the release confirmation without releasing a player's Oddling.
+- The November 4 build splits the main entry (~447 kB minified / 134 kB gzip) and HabitatCanvas (~459 kB / 235 kB gzip). The earlier bundle sizes and timing observations below are historical.
+
 - **Final local verification, November 3, 2026 (Pacific): 134/134 tests passed, zero skipped; TypeScript passed; production build passed with the actual image and audio files retrieved from the live preview.** API integration checks used an isolated server and blank provider keys. No paid inference was used by the automated checks. A refund test was corrected to use the wallet's local date rather than UTC; the 2,000-cent runtime budget was preserved. Explicit smaller budgets in synthetic limit tests are deliberate fixtures.
 - Build completed in about 3.1 seconds in this run. Vite warns about the main JavaScript chunk: approximately 1.17 MB minified / 439 kB gzip. Passing a build does not establish fast loading or 60 FPS.
 - Historical live evidence: the five-photo table and forced incubator failures above; earlier hosted checks covered recognition, hatch/claim, reload, fusion attribution, chat, banter and photo quests. Those are dated observations, not a fresh end-to-end certification of every later change.
-- Latest performance browser checks covered resident movement, World exploration/return, painting, undo/redo/cancel, and Field Guide/Incubator/Fusion navigation with four saved residents. Relevant terrain/build/grass/storage tests also passed.
+- Latest performance browser checks covered resident movement, World exploration/return, painting, undo/redo/cancel, and Collection/Incubator/Fusion navigation with four saved residents. Relevant terrain/build/grass/storage tests also passed.
 - **Not verified in this final pass:** physical camera hardware, a new paid photo-to-hatch/name/chat/fusion/item sequence, sustained large-world or 20/50-resident performance, physical-phone GPU behavior, 30-minute memory stability, crash-safe reward transactions across two tabs, production multi-instance budgets/jobs, anonymous deployment access, and final submission/video availability. Cross-area item transfers under interrupted writes need further testing.
 
 See [demo-script.md](demo-script.md) for the three-minute recording plan and [SUBMISSION.md](SUBMISSION.md) for the current draft and remaining deliverables.

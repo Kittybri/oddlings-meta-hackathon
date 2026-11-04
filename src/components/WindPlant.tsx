@@ -12,7 +12,9 @@ export function WindPlant({children,offset=0,tall=false,paused=false}:{children:
   let frame=0,last=0,previous='';
   const tick=(now:number)=>{
    frame=requestAnimationFrame(tick);if(now-last<32||document.hidden)return;last=now;
-   const gust=windGust(weatherBus.get().wind??0,now/1000,offset);
+   // Placed trees and plants only bend while the weather is windy; in calm weather they stand still
+   const weather=weatherBus.get() as {wind?:number;state?:string};
+   const gust=weather.state==='windy'?windGust(weather.wind??0,now/1000,offset):0;
    const value=gust>.001?`skewX(${-gust*(tall?7:22)}deg)`:'none';
    if(ref.current&&value!==previous){ref.current.style.transform=value;previous=value;}
   };

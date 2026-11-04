@@ -204,7 +204,9 @@
 @media (prefers-reduced-motion: reduce) { .bg-leaves { animation: none; } }
 
 /* Background trees: a gentle rock from the trunk base, livelier as the wind picks up */
-.bg-tree { image-rendering: pixelated; animation: oddlings-bg-tree calc(4s - var(--wind, 0.3) * 2s) ease-in-out infinite; }
+/* They stand still in calm weather and only sway while the weather is windy */
+.bg-tree { image-rendering: pixelated; }
+[data-windy="true"] .bg-tree { animation: oddlings-bg-tree calc(4s - var(--wind, 0.3) * 2s) ease-in-out infinite; }
 @keyframes oddlings-bg-tree { 0%, 100% { transform: rotate(calc(-0.6deg - var(--wind, 0.3) * 1.2deg)); } 50% { transform: rotate(calc(0.6deg + var(--wind, 0.3) * 1.8deg)); } }
 @media (prefers-reduced-motion: reduce) { .bg-tree { animation: none; } }
 

@@ -6,3 +6,13 @@ dist/
 ai-daily-usage.json
 meta-usage.json
 *.log
+
+# Editor artifacts and local verification output
+.aistudio/
+build/
+coverage/
+.DS_Store
+.pnpm-store/
+test-results.txt
+build-results.txt
+*.zip

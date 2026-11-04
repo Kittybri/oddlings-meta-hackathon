@@ -157,7 +157,7 @@ export function WorldViewport({ enabled, editMode, region, neighbors, world, onT
       {(editMode || !roomy()) && <button onClick={() => setBarOpen(false)} title="Hide these controls" aria-label="Hide explore and weather controls" className="px-2 py-1 rounded-lg hover:bg-emerald-900">✕</button>}
     </div>
     )}
-    <div ref={scroller} tabIndex={0} aria-label="Scrollable World" onScroll={travelScroll} onWheel={() => { userScrolling.current = true; }}
+    <div ref={scroller} tabIndex={0} aria-label="Scrollable World" data-windy={weather.state === 'windy' ? 'true' : 'false'} onScroll={travelScroll} onWheel={() => { userScrolling.current = true; }}
       onKeyDown={e => { if (e.target === e.currentTarget && ['ArrowLeft', 'ArrowRight'].includes(e.key)) { e.preventDefault(); scroll(e.key === 'ArrowLeft' ? -1 : 1); } }}
       // A press only becomes a drag once it slides a few pixels, so tapping creatures, buttons and items still works;
       // presses on buttons, fields and anything grabbable keep their own drag
