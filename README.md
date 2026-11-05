@@ -8,13 +8,19 @@
 
 **Meta Global AI Developer Hackathon 2026 · Indie Developer · Build for Your World**
 
-**[▶ Play Oddlings](https://oddlings-meta.ai.studio/)** · [Photo results](#first-photo-check) · [Reviewer guide](docs/REVIEWER-GUIDE.md) · [Run locally](#run) · [License](LICENSE)
+**[▶ Play Oddlings](https://oddlings-meta.ai.studio/)** · **[🎬 Demo video](https://youtu.be/OkFFgc4f-2g)** · [Photo results](#first-photo-check) · [Reviewer guide](docs/REVIEWER-GUIDE.md) · [Run locally](#run) · [License](LICENSE)
 
 | [Indie track criterion](https://dev.meta.ai/events/global-hackathon) | What Oddlings delivers | Where to verify |
 | --- | --- | --- |
 | **Creativity** | Objects from your own space become companions you can care for, talk to, and bring into a habitat you build. Fusion gives two discoveries a shared descendant with recorded lineage. | [First photo check](#first-photo-check) · [Fusion Lab source](src/components/FusionLab.tsx) |
 | **Technical ambition** | Two Meta models turn photos into playable creatures and fuse pairs into hybrids with recorded lineage. Residents remember interactions and send players on photo quests. A persistent habitat stores player edits, while a shared job system handles model calls, retries, and limits. | [Architecture and code](docs/REVIEWER-GUIDE.md#from-a-photo-to-a-playable-creature) · [Model routes](docs/REVIEWER-GUIDE.md#model-routes) |
 | **Works in the game** | A live fan photo went through recognition, incubation, hatch, claim, and reload. The same evidence batch includes four creature results, an item drawing, and an AI backdrop. The tested source passed 151 automated tests, TypeScript, and the production build. | [Play the live build](https://oddlings-meta.ai.studio/) · [Photo evidence](#first-photo-check) · [Verification and scope](docs/REVIEWER-GUIDE.md#what-was-verified) |
+
+## Demo video
+
+[![Watch the Oddlings demo](https://img.youtube.com/vi/OkFFgc4f-2g/maxresdefault.jpg)](https://youtu.be/OkFFgc4f-2g)
+
+A 1:21 walkthrough: photo → egg → Oddling, building a world, and fusing two Oddlings. Waits that were cut are labeled "time skipped".
 
 ## Your first adventure
 
