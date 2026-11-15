@@ -1,6 +1,6 @@
 /**
  * @license
- * SPDX-License-Identifier: Apache-2.0
+ * SPDX-License-Identifier: LicenseRef-Oddlings-Proprietary
  *
  * Photo-made items: a 16x16 pixel sprite plus a name and description.
  * Meta Muse Spark designs the sprite from the photo; when its grid is unusable

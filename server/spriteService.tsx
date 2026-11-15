@@ -2,7 +2,7 @@ import { sharedConfigured, reserveShared, redisCommand, sharedJobKey } from './s
 import { randomUUID } from 'node:crypto';
 /**
  * @license
- * SPDX-License-Identifier: Apache-2.0
+ * SPDX-License-Identifier: LicenseRef-Oddlings-Proprietary
  *
  * Meta Muse Spark Open (via Baseten) reviews a creature sprite that was traced from
  * the player's photo: it fixes each color to the object's true color, flags traced

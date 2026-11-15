@@ -1,6 +1,6 @@
 /**
  * @license
- * SPDX-License-Identifier: Apache-2.0
+ * SPDX-License-Identifier: LicenseRef-Oddlings-Proprietary
  *
  * Friendship hearts: one heart per 10 trust, ten hearts in total.
  */

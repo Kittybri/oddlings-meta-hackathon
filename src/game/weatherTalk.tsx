@@ -1,6 +1,6 @@
 /**
  * @license
- * SPDX-License-Identifier: Apache-2.0
+ * SPDX-License-Identifier: LicenseRef-Oddlings-Proprietary
  *
  * Creatures comment on the weather. Each one has a lasting attitude toward rain and
  * reacts when clouds gather, when rain starts, now and then while it pours, and when it clears.

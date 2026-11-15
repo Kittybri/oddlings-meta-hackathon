@@ -2,7 +2,7 @@ import { GardenProp } from './GardenProp';
 import oakPreview from '../../garden-tree-px.png';
 /**
  * @license
- * SPDX-License-Identifier: Apache-2.0
+ * SPDX-License-Identifier: LicenseRef-Oddlings-Proprietary
  */
 
 import { BUILD_ITEMS, TREE_TYPES } from '../game/buildCatalog';

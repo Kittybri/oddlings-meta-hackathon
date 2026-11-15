@@ -1,6 +1,6 @@
 /**
  * @license
- * SPDX-License-Identifier: Apache-2.0
+ * SPDX-License-Identifier: LicenseRef-Oddlings-Proprietary
  *
  * The Sparkle Shop: a little pixel market stall where Sparkle Coins buy more Life Seeds,
  * Craft Gems and quest photo checks. Coins are earned by caring for creatures and quests.

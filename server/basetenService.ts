@@ -1,7 +1,7 @@
 import { parseCreatureResponse } from './creatureResponse';
 /**
  * @license
- * SPDX-License-Identifier: Apache-2.0
+ * SPDX-License-Identifier: LicenseRef-Oddlings-Proprietary
  */
 
 import { ElementType, ObjectArchetype, TemperamentType, VisualPlan, CompositionalSilhouette } from '../src/game/creatureTypes';

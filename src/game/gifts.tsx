@@ -1,6 +1,6 @@
 /**
  * @license
- * SPDX-License-Identifier: Apache-2.0
+ * SPDX-License-Identifier: LicenseRef-Oddlings-Proprietary
  *
  * Gift tastes: every creature loves one treat, likes another, dislikes one,
  * and is neutral about the rest. Tastes are discovered by giving treats.

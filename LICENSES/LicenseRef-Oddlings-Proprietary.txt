@@ -1,0 +1,49 @@
+Oddlings Proprietary License — All Rights Reserved
+
+Copyright (c) 2026 Kittybri. All rights reserved.
+
+1. Proprietary code and original assets
+
+Except for materials expressly identified as subject to other licenses, the
+original Oddlings source code, documentation, artwork, game content, and related
+materials owned by the Oddlings copyright holder in the current and future
+versions of this repository are proprietary.
+
+No permission is granted to copy, modify, distribute, sublicense, sell, host,
+or commercially exploit those proprietary materials without the copyright
+holder's prior written authorization, except as permitted by applicable law or
+other binding terms. Public access to source code is not a general license to
+reuse it. Access and features furnished by GitHub remain subject to GitHub's
+applicable terms.
+
+2. Previously published Apache-2.0 versions
+
+This change is prospective, not retroactive. Copies of code and other material
+validly released under the Apache License, Version 2.0, before this change
+continue to have the permissions granted under that license. Those permissions
+are not revoked by this notice. The historical Apache license text is retained
+in THIRD_PARTY_LICENSES/Apache-2.0.txt for reference.
+
+For any third-party contribution or component that the Oddlings copyright
+holder does not have the authority to relicense, its original license remains
+in force. Nothing here restricts rights already granted under that license.
+
+3. Third-party materials and services
+
+Open-source packages, fonts, models, photographs, attributed images, and
+other third-party materials remain subject to their own license agreements and
+terms, regardless of this file. Any credits and third-party notices already
+in this repository must be preserved where required. This notice does not
+claim ownership of such materials.
+
+4. Permission requests
+
+For commercial licensing, redistribution, or partnership requests, contact
+the repository owner through their GitHub profile. Permission must be granted
+expressly by the applicable rights holder.
+
+5. Disclaimer
+
+TO THE MAXIMUM EXTENT PERMITTED BY LAW, PROPRIETARY MATERIALS ARE PROVIDED
+"AS IS", WITHOUT WARRANTIES OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.

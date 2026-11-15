@@ -1,6 +1,6 @@
 /**
  * @license
- * SPDX-License-Identifier: Apache-2.0
+ * SPDX-License-Identifier: LicenseRef-Oddlings-Proprietary
  *
  * Creature diaries and photo-based speech.
  * Meta Muse Spark writes diary entries and speech lines from each creature's source

@@ -16,6 +16,10 @@
 | **Technical ambition** | Two Meta models turn photos into playable creatures and fuse pairs into hybrids with recorded lineage. Residents remember interactions and send players on photo quests. A persistent habitat stores player edits, while a shared job system handles model calls, retries, and limits. | [Architecture and code](docs/REVIEWER-GUIDE.md#from-a-photo-to-a-playable-creature) · [Model routes](docs/REVIEWER-GUIDE.md#model-routes) |
 | **Works in the game** | A live fan photo went through recognition, incubation, hatch, claim, and reload. The same evidence batch includes four creature results, an item drawing, and an AI backdrop. The tested source passed 151 automated tests, TypeScript, and the production build. | [Play the live build](https://oddlings-meta.ai.studio/) · [Photo evidence](#first-photo-check) · [Verification and scope](docs/REVIEWER-GUIDE.md#what-was-verified) |
 
+## Licensing and commercial use
+
+This repository's current first-party Oddlings materials are **proprietary — All Rights Reserved**; see [LICENSE](LICENSE). Previously released Apache-2.0 copies retain the permissions granted to those copies, and third-party packages, images, fonts, and other assets retain their separate licenses. Publicly visible source is not permission to commercially exploit the current proprietary release.
+
 ## Demo video
 
 [![Watch the Oddlings demo](https://img.youtube.com/vi/OkFFgc4f-2g/maxresdefault.jpg)](https://youtu.be/OkFFgc4f-2g)

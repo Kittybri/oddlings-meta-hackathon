@@ -1,6 +1,6 @@
 /**
  * @license
- * SPDX-License-Identifier: Apache-2.0
+ * SPDX-License-Identifier: LicenseRef-Oddlings-Proprietary
  *
  * Draws rain on an OffscreenCanvas in a worker, so it keeps falling smoothly even
  * when the page's main thread is busy with the game.

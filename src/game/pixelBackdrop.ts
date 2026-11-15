@@ -1,6 +1,6 @@
 /**
  * @license
- * SPDX-License-Identifier: Apache-2.0
+ * SPDX-License-Identifier: LicenseRef-Oddlings-Proprietary
  *
  * The World's background scenery, drawn as real low-resolution pixel art: rounded rocky spires built from
  * stone blocks, leafy clumps draped over their ledges, mist wrapping around them, and a forest in front.

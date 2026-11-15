@@ -1,6 +1,6 @@
 /**
  * @license
- * SPDX-License-Identifier: Apache-2.0
+ * SPDX-License-Identifier: LicenseRef-Oddlings-Proprietary
  */
 
 import { BiomeWorldState, CustomBiomeRecord, HabitatThemeId } from './biomeWorldTypes';

@@ -1,7 +1,7 @@
 import { createPortal } from 'react-dom';
 /**
  * @license
- * SPDX-License-Identifier: Apache-2.0
+ * SPDX-License-Identifier: LicenseRef-Oddlings-Proprietary
  *
  * Talk to a creature: a pixel chat window. Replies come from Meta Muse Spark on Fireworks,
  * written in the creature's own voice with its hearts, mood, weather and memories.

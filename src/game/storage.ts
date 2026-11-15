@@ -2,7 +2,7 @@ import { pendingTransfer, recoverWorldTransfer } from './worldRegions';
 import { normalizeHome, isWorldRegionId } from './worldRegions';
 /**
  * @license
- * SPDX-License-Identifier: Apache-2.0
+ * SPDX-License-Identifier: LicenseRef-Oddlings-Proprietary
  */
 
 import { CreatureDNA, FirstRunGoals, VisualPlan, ObjectArchetype, IncubatorEgg, INCUBATION_DURATION_SECONDS } from './creatureTypes';

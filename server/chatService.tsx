@@ -1,6 +1,6 @@
 /**
  * @license
- * SPDX-License-Identifier: Apache-2.0
+ * SPDX-License-Identifier: LicenseRef-Oddlings-Proprietary
  *
  * Live chat with a creature, written by Meta Muse Spark Open on Fireworks.
  * The creature answers in its own voice and knows its object, mood, hearts, weather and recent memories.

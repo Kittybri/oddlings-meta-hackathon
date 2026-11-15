@@ -1,6 +1,6 @@
 /**
  * @license
- * SPDX-License-Identifier: Apache-2.0
+ * SPDX-License-Identifier: LicenseRef-Oddlings-Proprietary
  *
  * Shared pre-upload image compressor and resizer (~1280px JPEG)
  * Used consistently across IncubatorLab, PhotoQuest, PhotoItemModal, and CreateBiomeModal.

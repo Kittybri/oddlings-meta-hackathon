@@ -1,7 +1,7 @@
 import { createPortal } from 'react-dom';
 /**
  * @license
- * SPDX-License-Identifier: Apache-2.0
+ * SPDX-License-Identifier: LicenseRef-Oddlings-Proprietary
  *
  * Photo quests: a creature asks for something ("something red"), the player snaps a photo,
  * and Meta Muse Spark on Fireworks checks it. A match earns a friendship heart and energy.

@@ -17,7 +17,7 @@ import { GardenAdventureModal } from './GardenAdventureModal';
 import { DiaryBook } from './DiaryBook';
 /**
  * @license
- * SPDX-License-Identifier: Apache-2.0
+ * SPDX-License-Identifier: LicenseRef-Oddlings-Proprietary
  */
 
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';

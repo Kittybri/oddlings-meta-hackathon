@@ -2,7 +2,7 @@
 
 Play: https://oddlings-meta.ai.studio/
 Source: https://github.com/Kittybri/oddlings-meta-hackathon
-License: Apache-2.0 (see LICENSE).
+License: Proprietary / All Rights Reserved for this revision's first-party materials (see LICENSE). Earlier Apache-2.0 grants and third-party licenses remain valid.
 
 The November 4 release passed 151 tests, TypeScript, and the production build. The public health check and habitat load passed after redeployment. See the [README photo gallery](README.md#first-photo-check) for the first results from four creator photos and two artwork routes, and the [reviewer guide](docs/REVIEWER-GUIDE.md#what-was-verified) for the evidence and scope of each check. Final video and submission status remain unverified.
 

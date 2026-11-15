@@ -1,7 +1,7 @@
 import type { CreatureDNA } from './creatureTypes';
 /**
  * @license
- * SPDX-License-Identifier: Apache-2.0
+ * SPDX-License-Identifier: LicenseRef-Oddlings-Proprietary
  *
  * Life Seeds, Craft Gems and Sparkle Coins: the player's allowance for turning photos into things.
  * A Life Seed hatches a creature, a Craft Gem makes an item. Players start with a few

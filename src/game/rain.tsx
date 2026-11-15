@@ -1,6 +1,6 @@
 /**
  * @license
- * SPDX-License-Identifier: Apache-2.0
+ * SPDX-License-Identifier: LicenseRef-Oddlings-Proprietary
  *
  * Rain drops and ground splashes. Every drop is aimed at the ground height of the
  * column it lands in, so rain hits the terrain, the water and the platforms.

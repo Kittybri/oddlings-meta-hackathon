@@ -1,6 +1,6 @@
 /**
  * @license
- * SPDX-License-Identifier: Apache-2.0
+ * SPDX-License-Identifier: LicenseRef-Oddlings-Proprietary
  *
  * Mood music: the day track fades out and a generated mood takes over when rain is
  * about to come, while it rains, and at night (with crickets). All sound is made

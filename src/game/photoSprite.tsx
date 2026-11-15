@@ -1,7 +1,7 @@
 import { hasUsableItemSilhouette, retryItemArt } from './itemArtQuality';
 /**
  * @license
- * SPDX-License-Identifier: Apache-2.0
+ * SPDX-License-Identifier: LicenseRef-Oddlings-Proprietary
  *
  * Turns the player's photo into the creature's pixel sprite: cut the object out of
  * its background, drop a hand that is holding it, shrink it to a small grid, reduce

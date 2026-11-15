@@ -1,6 +1,6 @@
 /**
  * @license
- * SPDX-License-Identifier: Apache-2.0
+ * SPDX-License-Identifier: LicenseRef-Oddlings-Proprietary
  *
  * Fault-injection unit tests covering:
  * 1. storage.ts claimActiveEgg failure retention, retry deduplication, and persistence-first guarantee.

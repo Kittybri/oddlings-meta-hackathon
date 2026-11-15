@@ -1,6 +1,6 @@
 /**
  * @license
- * SPDX-License-Identifier: Apache-2.0
+ * SPDX-License-Identifier: LicenseRef-Oddlings-Proprietary
  *
  * World weather. A storm gathers (sky greys, clouds thicken), rains, then clears.
  * The schedule is a pure function of the World clock, so it survives reloads.

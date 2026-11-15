@@ -1,7 +1,7 @@
 import { createPortal } from 'react-dom';
 /**
  * @license
- * SPDX-License-Identifier: Apache-2.0
+ * SPDX-License-Identifier: LicenseRef-Oddlings-Proprietary
  */
 
 import React, { useEffect, useState, useRef } from 'react';

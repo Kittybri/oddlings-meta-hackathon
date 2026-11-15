@@ -1,6 +1,6 @@
 /**
  * @license
- * SPDX-License-Identifier: Apache-2.0
+ * SPDX-License-Identifier: LicenseRef-Oddlings-Proprietary
  *
  * GardenAdventureModal: Interactive, cute, cozy pixel UI for the First Garden Adventure.
  * Displays progress, starter resident guide, DNA trait & effect reveals, and one-time reward claim.

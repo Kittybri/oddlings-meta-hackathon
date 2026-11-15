@@ -40,7 +40,7 @@ if (typeof document !== 'undefined' && !document.getElementById('oddlings-pixel-
 import { normalizeHome } from './game/worldRegions';
 /**
  * @license
- * SPDX-License-Identifier: Apache-2.0
+ * SPDX-License-Identifier: LicenseRef-Oddlings-Proprietary
  */
 
 import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
